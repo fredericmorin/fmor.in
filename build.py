@@ -2,6 +2,7 @@
 """Static site builder for fmor.in photoblog and gallery."""
 
 import json
+import os
 import shutil
 import sys
 from pathlib import Path
@@ -15,6 +16,44 @@ ACCEPTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tiff"}
 PHOTOBLOG_SIZES = [800, 1920, 3200]
 GALLERY_SIZES = [400, 800, 1920, 3200]
 IMAGE_FORMATS = {"avif": "AVIF", "jpg": "JPEG"}
+
+
+class Reporter:
+    """Progress reporter for image generation.
+
+    TTY mode: overwrites a single status line using \\r.
+    Non-TTY mode: prints one line per completed file.
+    """
+
+    def __init__(self, total: int, is_tty: bool | None = None):
+        self._total = total
+        self._done = 0
+        self._is_tty = sys.stderr.isatty() if is_tty is None else is_tty
+
+    def report(self, path: Path):
+        self._done += 1
+        rel = str(path)
+        if self._is_tty:
+            try:
+                cols = os.get_terminal_size(sys.stderr.fileno()).columns
+            except (AttributeError, OSError):
+                cols = 80
+            line = f"[{self._done}/{self._total}] {rel}"
+            if len(line) > cols:
+                line = line[: cols - 1]
+            print(f"\r{line}", end="", flush=True, file=sys.stderr)
+        else:
+            print(rel, file=sys.stderr)
+
+    def finish(self, summary: str):
+        if self._is_tty:
+            try:
+                cols = os.get_terminal_size(sys.stderr.fileno()).columns
+            except (AttributeError, OSError):
+                cols = 80
+            print(f"\r{' ' * cols}\r{summary}", file=sys.stderr)
+        else:
+            print(summary, file=sys.stderr)
 
 
 def extract_exif(photo_path: Path) -> dict:

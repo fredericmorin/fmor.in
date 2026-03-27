@@ -1,4 +1,6 @@
 # tests/test_images.py
+import io
+import sys
 from pathlib import Path
 from tests.helpers import make_test_image
 
@@ -90,3 +92,44 @@ def test_resize_and_save_returns_output_path(tmp_path):
     out = tmp_path / "out-100.jpg"
     result = resize_and_save(src, out, 100, "JPEG")
     assert result == out
+
+
+def test_reporter_non_tty_prints_lines(tmp_path, capsys):
+    from build import Reporter
+    r = Reporter(total=3, is_tty=False)
+    r.report(tmp_path / "a.jpg")
+    r.report(tmp_path / "b.avif")
+    captured = capsys.readouterr()
+    lines = captured.err.strip().splitlines()
+    assert len(lines) == 2
+    assert "a.jpg" in lines[0]
+    assert "b.avif" in lines[1]
+
+
+def test_reporter_non_tty_finish_prints_summary(capsys):
+    from build import Reporter
+    r = Reporter(total=5, is_tty=False)
+    r.finish("Build complete: 5 files")
+    captured = capsys.readouterr()
+    assert "Build complete: 5 files" in captured.err
+
+
+def test_reporter_tty_overwrites_line(tmp_path, capsys, monkeypatch):
+    from build import Reporter
+    r = Reporter(total=3, is_tty=True)
+    r.report(tmp_path / "a.jpg")
+    r.report(tmp_path / "b.avif")
+    captured = capsys.readouterr()
+    # Should use \r, not \n between updates
+    assert "\r" in captured.err
+    # Should not have two newline-separated file lines
+    newline_lines = [l for l in captured.err.split("\n") if l.strip()]
+    assert len(newline_lines) <= 1
+
+
+def test_reporter_tty_finish_clears_line(capsys):
+    from build import Reporter
+    r = Reporter(total=2, is_tty=True)
+    r.finish("Done")
+    captured = capsys.readouterr()
+    assert "Done" in captured.err
