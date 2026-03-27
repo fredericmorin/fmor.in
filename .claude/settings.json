@@ -20,7 +20,9 @@
       "Bash(git commit *)",
       "Bash(git log *)",
       "Bash(git show *)",
-      "Bash(python -m pytest *)"
+      "Bash(python -m pytest *)",
+      "Bash(git push:*)",
+      "Bash(gh pr:*)"
     ],
     "deny": [
       "Bash(rm *)",
