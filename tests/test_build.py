@@ -42,6 +42,42 @@ def test_full_build_produces_output(tmp_path):
     assert (gal_photos / "img2-800.jpg").exists()
 
 
+def test_full_build_parallel_generates_all_images(tmp_path):
+    """Parallel build produces same output as serial build."""
+    import shutil
+    from tests.helpers import make_test_image
+    from build import build_site
+
+    content = tmp_path / "content"
+    pb = content / "photoblog"
+    pb.mkdir(parents=True)
+    make_test_image(pb / "photo1.jpg")
+    make_test_image(pb / "photo2.jpg")
+
+    gal = content / "galleries" / "mygal"
+    gal.mkdir(parents=True)
+    make_test_image(gal / "img1.jpg")
+    make_test_image(gal / "img2.jpg")
+    make_test_image(gal / "img3.jpg")
+
+    project_root = tmp_path.parent.parent  # get actual project root
+    from pathlib import Path
+    real_root = Path(__file__).parent.parent
+    shutil.copytree(real_root / "templates", tmp_path / "templates")
+    shutil.copytree(real_root / "static", tmp_path / "static")
+
+    build_site(tmp_path)
+
+    out = tmp_path / "output"
+    pb_photos = out / "photoblog" / "photos"
+    # 2 photos x 3 sizes x 2 formats = 12 files
+    assert len(list(pb_photos.iterdir())) == 12
+
+    gal_photos = out / "gallery" / "mygal" / "photos"
+    # 3 photos x 4 sizes x 2 formats = 24 files
+    assert len(list(gal_photos.iterdir())) == 24
+
+
 def test_build_with_empty_content(tmp_path):
     """Build should succeed with empty content dirs."""
     content = tmp_path / "content"

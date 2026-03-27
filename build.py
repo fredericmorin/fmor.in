@@ -5,6 +5,7 @@ import json
 import os
 import shutil
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
@@ -244,18 +245,13 @@ def collect_gallery_tasks(photos: list[dict], output_dir: Path) -> list[tuple]:
     return tasks
 
 
-def generate_photoblog_images(photos: list[dict], output_dir: Path):
-    """Backward compatibility wrapper. Use collect_photoblog_tasks for new code."""
-    tasks = collect_photoblog_tasks(photos, output_dir)
-    for task in tasks:
-        resize_and_save(*task)
-
-
-def generate_gallery_images(photos: list[dict], output_dir: Path):
-    """Backward compatibility wrapper. Use collect_gallery_tasks for new code."""
-    tasks = collect_gallery_tasks(photos, output_dir)
-    for task in tasks:
-        resize_and_save(*task)
+def run_image_tasks(tasks: list[tuple], reporter: "Reporter"):
+    """Execute image resize tasks in parallel using a thread pool."""
+    with ThreadPoolExecutor() as pool:
+        futures = {pool.submit(resize_and_save, *task): task for task in tasks}
+        for future in as_completed(futures):
+            path = future.result()  # re-raises any exception
+            reporter.report(path)
 
 
 def make_alt_text(filename: str) -> str:
@@ -307,26 +303,26 @@ def build_site(project_root: Path):
     photoblog_photos = scan_photoblog(content_dir / "photoblog")
     galleries = scan_galleries(content_dir / "galleries")
 
-    # 2. Generate responsive images
+    # 2. Collect and run image tasks in parallel
+    all_tasks: list[tuple] = []
+
     if photoblog_photos:
-        generate_photoblog_images(
-            photoblog_photos,
-            output_dir / "photoblog" / "photos",
-        )
+        pb_out = output_dir / "photoblog" / "photos"
+        all_tasks.extend(collect_photoblog_tasks(photoblog_photos, pb_out))
 
     for gallery in galleries:
         gallery_out = output_dir / "gallery" / gallery["name"] / "photos"
-        generate_gallery_images(gallery["photos"], gallery_out)
+        all_tasks.extend(collect_gallery_tasks(gallery["photos"], gallery_out))
 
-        # Generate cover image if it's a separate _cover file
         cover_path = gallery["cover"]
         if cover_path.stem.lower() == "_cover":
-            # Generate cover sizes into the gallery photos dir
             cover_photos = [{"source": cover_path, "exif": {}}]
-            generate_gallery_images(cover_photos, gallery_out)
+            all_tasks.extend(collect_gallery_tasks(cover_photos, gallery_out))
 
-        # Store cover stem for templates
         gallery["cover_stem"] = cover_path.stem
+
+    reporter = Reporter(total=len(all_tasks))
+    run_image_tasks(all_tasks, reporter)
 
     # 3. Render templates
     env = Environment(loader=FileSystemLoader(str(template_dir)))
@@ -389,7 +385,9 @@ def build_site(project_root: Path):
     if favicon.exists():
         shutil.copy2(str(favicon), str(output_dir / "favicon.ico"))
 
-    print(f"Build complete: {len(photoblog_photos)} photoblog photos, {len(galleries)} galleries")
+    reporter.finish(
+        f"Build complete: {len(photoblog_photos)} photoblog photos, {len(galleries)} galleries"
+    )
 
 
 if __name__ == "__main__":
