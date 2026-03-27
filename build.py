@@ -217,31 +217,45 @@ def resize_and_save(source: Path, output_path: Path, max_width: int, fmt: str):
     return output_path
 
 
-def generate_photoblog_images(photos: list[dict], output_dir: Path):
-    """Generate responsive images for photoblog photos."""
+def collect_photoblog_tasks(photos: list[dict], output_dir: Path) -> list[tuple]:
+    """Return image tasks for photoblog photos. Sets photo['index'] as a side effect."""
     output_dir.mkdir(parents=True, exist_ok=True)
-
+    tasks = []
     for i, photo in enumerate(photos, 1):
         index = f"{i:03d}"
+        photo["index"] = index
         for size in PHOTOBLOG_SIZES:
             for ext, fmt in IMAGE_FORMATS.items():
                 out_path = output_dir / f"{index}-{size}.{ext}"
-                resize_and_save(photo["source"], out_path, size, fmt)
-
-        # Store output paths for template rendering
-        photo["index"] = index
+                tasks.append((photo["source"], out_path, size, fmt))
+    return tasks
 
 
-def generate_gallery_images(photos: list[dict], output_dir: Path):
-    """Generate responsive images for gallery photos (includes 400px thumbnail)."""
+def collect_gallery_tasks(photos: list[dict], output_dir: Path) -> list[tuple]:
+    """Return image tasks for gallery photos."""
     output_dir.mkdir(parents=True, exist_ok=True)
-
+    tasks = []
     for photo in photos:
         stem = photo["source"].stem
         for size in GALLERY_SIZES:
             for ext, fmt in IMAGE_FORMATS.items():
                 out_path = output_dir / f"{stem}-{size}.{ext}"
-                resize_and_save(photo["source"], out_path, size, fmt)
+                tasks.append((photo["source"], out_path, size, fmt))
+    return tasks
+
+
+def generate_photoblog_images(photos: list[dict], output_dir: Path):
+    """Backward compatibility wrapper. Use collect_photoblog_tasks for new code."""
+    tasks = collect_photoblog_tasks(photos, output_dir)
+    for task in tasks:
+        resize_and_save(*task)
+
+
+def generate_gallery_images(photos: list[dict], output_dir: Path):
+    """Backward compatibility wrapper. Use collect_gallery_tasks for new code."""
+    tasks = collect_gallery_tasks(photos, output_dir)
+    for task in tasks:
+        resize_and_save(*task)
 
 
 def make_alt_text(filename: str) -> str:
