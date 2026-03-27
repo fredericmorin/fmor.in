@@ -28,9 +28,9 @@
         if (exif.aperture) fields.push("\u0192/" + exif.aperture);
         if (exif.shutter_speed) fields.push(exif.shutter_speed + "s");
         if (exif.iso) fields.push("ISO " + exif.iso);
-        if (exif.white_balance) fields.push(exif.white_balance);
-        if (exif.metering) fields.push(exif.metering);
-        if (exif.exposure_comp) fields.push(exif.exposure_comp + " EV");
+        // if (exif.white_balance) fields.push(exif.white_balance);
+        // if (exif.metering) fields.push(exif.metering);
+        // if (exif.exposure_comp) fields.push(exif.exposure_comp + " EV");
 
         var html = '<div class="exif-bar">';
         if (date) html += '<span class="exif-date">' + date + '</span>';
