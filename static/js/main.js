@@ -70,9 +70,12 @@
     // --- Slideshow (Photoblog) ---
 
     var slideshowIndex = 0;
+    var slideshowBasePath = "";
 
     function initSlideshow() {
         if (!window.PHOTOS || window.PHOTOS.length === 0) return;
+
+        slideshowBasePath = location.pathname;
 
         var hash = location.hash.replace("#", "");
         if (hash) {
@@ -81,6 +84,18 @@
         }
 
         showSlide(slideshowIndex);
+
+        // Populate inline grid
+        var gridEl = document.getElementById("photoblog-grid-thumbnails");
+        if (gridEl) {
+            gridEl.innerHTML = window.PHOTOS.map(function (photo, i) {
+                return '<div class="thumbnail" role="button" tabindex="0"' +
+                    ' aria-label="' + (photo.alt || ("Photo " + (i + 1))) + '"' +
+                    ' onclick="navigateFromGrid(' + i + ')">' +
+                    '<picture>' + buildPicture(photo, "(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw") + '</picture>' +
+                    '</div>';
+            }).join("");
+        }
 
         window.addEventListener("popstate", function () {
             var h = location.hash.replace("#", "");
@@ -105,7 +120,7 @@
         var exifEl = document.getElementById("exif-container");
         if (exifEl) exifEl.innerHTML = buildExif(photo.exif, photo.date);
 
-        history.replaceState(null, "", "#" + photo.slug);
+        history.replaceState(null, "", slideshowBasePath + "#" + photo.slug);
 
         // Preload adjacent
         if (index > 0) preloadImage(photos[index - 1]);
@@ -117,6 +132,30 @@
         if (!photos) return;
         var next = slideshowIndex + delta;
         if (next >= 0 && next < photos.length) showSlide(next);
+    };
+
+    window.showPhotoblogGrid = function (e) {
+        if (e) e.preventDefault();
+        var slideshow = document.getElementById("slideshow");
+        var gridView = document.getElementById("photoblog-grid-view");
+        if (slideshow) slideshow.style.display = "none";
+        if (gridView) gridView.style.display = "";
+        history.replaceState(null, "", slideshowBasePath + "gallery/");
+    };
+
+    window.hidePhotoblogGrid = function (e) {
+        if (e) e.preventDefault();
+        var slideshow = document.getElementById("slideshow");
+        var gridView = document.getElementById("photoblog-grid-view");
+        if (slideshow) slideshow.style.display = "";
+        if (gridView) gridView.style.display = "none";
+        var photo = window.PHOTOS && window.PHOTOS[slideshowIndex];
+        history.replaceState(null, "", slideshowBasePath + (photo ? "#" + photo.slug : ""));
+    };
+
+    window.navigateFromGrid = function (index) {
+        window.hidePhotoblogGrid();
+        showSlide(index);
     };
 
     // --- Lightbox (Gallery) ---

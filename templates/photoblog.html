@@ -17,7 +17,7 @@
 {% block content %}
 <div class="slideshow" id="slideshow" data-section="photoblog">
     <div class="slideshow-photo">
-        <a href="/photoblog/gallery/" class="gallery-back photoblog-gallery-link" aria-label="View all photos as gallery">Grid</a>
+        <a href="/photoblog/gallery/" class="gallery-back photoblog-gallery-link" aria-label="View all photos as gallery" onclick="showPhotoblogGrid(event)">Grid</a>
         <div class="nav-zone nav-zone--prev" onclick="navigatePhoto(-1)" role="button" aria-label="Previous photo" tabindex="0">
             <span class="arrow">‹</span>
         </div>
@@ -34,5 +34,14 @@
     </div>
 
     <div id="exif-container"></div>
+</div>
+
+<div id="photoblog-grid-view" style="display:none">
+    <div class="gallery-header">
+        <a href="/photoblog/" class="gallery-back" aria-label="Back to slideshow" onclick="hidePhotoblogGrid(event)">← Slideshow</a>
+        <span class="gallery-sep">·</span>
+        <h1 class="gallery-title">Photoblog</h1>
+    </div>
+    <div class="thumbnail-grid" id="photoblog-grid-thumbnails"></div>
 </div>
 {% endblock %}
