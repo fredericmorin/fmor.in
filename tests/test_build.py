@@ -34,8 +34,8 @@ def test_full_build_produces_output(tmp_path):
 
     # Check responsive images were generated
     pb_photos = output / "photoblog" / "photos"
-    assert (pb_photos / "001-800.avif").exists()
-    assert (pb_photos / "001-3200.jpg").exists()
+    assert (pb_photos / "photo1-400.avif").exists()
+    assert (pb_photos / "photo1-3200.jpg").exists()
 
     gal_photos = output / "gallery" / "testgal" / "photos"
     assert (gal_photos / "img1-400.avif").exists()
@@ -68,8 +68,8 @@ def test_full_build_parallel_generates_all_images(tmp_path):
 
     out = tmp_path / "output"
     pb_photos = out / "photoblog" / "photos"
-    # 2 photos x 3 sizes x 2 formats = 12 files
-    assert len(list(pb_photos.iterdir())) == 12
+    # 2 photos x 4 sizes x 2 formats = 16 files
+    assert len(list(pb_photos.iterdir())) == 16
 
     gal_photos = out / "gallery" / "mygal" / "photos"
     # 3 photos x 4 sizes x 2 formats = 24 files
@@ -94,3 +94,30 @@ def test_build_with_empty_content(tmp_path):
     assert (output / "index.html").exists()
     assert (output / "photoblog" / "index.html").exists()
     assert (output / "gallery" / "index.html").exists()
+
+
+def test_photoblog_gallery_page_is_generated(tmp_path):
+    """build_site() creates photoblog/gallery/index.html."""
+    import shutil
+    from build import build_site
+
+    content = tmp_path / "content"
+    pb = content / "photoblog"
+    pb.mkdir(parents=True)
+    make_test_image(pb / "photo1.jpg")
+    make_test_image(pb / "photo2.jpg")
+
+    project_root = Path(__file__).parent.parent
+    shutil.copytree(project_root / "templates", tmp_path / "templates")
+    shutil.copytree(project_root / "static", tmp_path / "static")
+
+    build_site(tmp_path)
+
+    output = tmp_path / "output"
+    gallery_page = output / "photoblog" / "gallery" / "index.html"
+    assert gallery_page.exists()
+
+    content_html = gallery_page.read_text()
+    assert "thumbnail-grid" in content_html
+    assert 'href="/photoblog/#1"' in content_html
+    assert "photo1" in content_html or "photo2" in content_html

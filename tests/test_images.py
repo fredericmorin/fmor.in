@@ -13,7 +13,7 @@ def test_collect_photoblog_tasks_returns_tuples(tmp_path):
     photos = scan_photoblog(src)
     out = tmp_path / "output" / "photoblog" / "photos"
     tasks = collect_photoblog_tasks(photos, out)
-    # 1 photo x 3 sizes x 2 formats = 6 tasks
+    # 1 photo x 4 sizes x 2 formats = 8 tasks
     assert len(tasks) == len(PHOTOBLOG_SIZES) * len(IMAGE_FORMATS)
     source, output_path, max_width, fmt = tasks[0]
     assert source == photos[0]["source"]
@@ -48,12 +48,14 @@ def test_collect_photoblog_tasks_creates_all_sizes(tmp_path):
     for task in tasks:
         resize_and_save(*task)
     files = sorted(f.name for f in out.iterdir())
-    assert "001-800.avif" in files
-    assert "001-800.jpg" in files
-    assert "001-1920.avif" in files
-    assert "001-1920.jpg" in files
-    assert "001-3200.avif" in files
-    assert "001-3200.jpg" in files
+    assert "photo-400.avif" in files
+    assert "photo-400.jpg" in files
+    assert "photo-800.avif" in files
+    assert "photo-800.jpg" in files
+    assert "photo-1920.avif" in files
+    assert "photo-1920.jpg" in files
+    assert "photo-3200.avif" in files
+    assert "photo-3200.jpg" in files
 
 
 def test_collect_gallery_tasks_creates_thumbnail_size(tmp_path):
@@ -86,11 +88,11 @@ def test_incremental_build_skips_existing(tmp_path):
     tasks = collect_photoblog_tasks(photos, out)
     for task in tasks:
         resize_and_save(*task)
-    first_mtime = (out / "001-800.jpg").stat().st_mtime
+    first_mtime = (out / "photo-800.jpg").stat().st_mtime
     time.sleep(0.1)
     for task in tasks:
         resize_and_save(*task)
-    second_mtime = (out / "001-800.jpg").stat().st_mtime
+    second_mtime = (out / "photo-800.jpg").stat().st_mtime
     assert first_mtime == second_mtime
 
 
@@ -105,7 +107,7 @@ def test_generated_image_dimensions(tmp_path):
     tasks = collect_photoblog_tasks(photos, out)
     for task in tasks:
         resize_and_save(*task)
-    img = Image.open(out / "001-800.jpg")
+    img = Image.open(out / "photo-800.jpg")
     assert img.width == 800
     assert img.height == 600
 

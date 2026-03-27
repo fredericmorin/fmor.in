@@ -247,6 +247,21 @@ main {
     outline-offset: 2px;
 }
 
+.photoblog-gallery-link {
+    position: absolute;
+    top: 12px;
+    left: 20px;
+    font-size: 11px;
+    color: #555;
+    z-index: 15;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.photoblog-gallery-link:hover {
+    color: #aaa;
+}
+
 .gallery-title {
     color: #ccc;
     font-size: 15px;
