@@ -57,6 +57,15 @@ class Reporter:
         else:
             print(summary, file=sys.stderr)
 
+    def clear(self):
+        """Clear the TTY status line (no-op in non-TTY mode). Call on error paths."""
+        if self._is_tty:
+            try:
+                cols = os.get_terminal_size(sys.stderr.fileno()).columns
+            except (AttributeError, OSError):
+                cols = 80
+            print(f"\r{' ' * cols}\r", end="", flush=True, file=sys.stderr)
+
 
 def extract_exif(photo_path: Path) -> dict:
     """Extract EXIF metadata from a photo. Returns dict of display fields."""
@@ -250,9 +259,13 @@ def run_image_tasks(tasks: list[tuple], reporter: "Reporter"):
     """Execute image resize tasks in parallel using a thread pool."""
     with ThreadPoolExecutor() as pool:
         futures = {pool.submit(resize_and_save, *task): task for task in tasks}
-        for future in as_completed(futures):
-            path = future.result()  # re-raises any exception
-            reporter.report(path)
+        try:
+            for future in as_completed(futures):
+                path = future.result()  # re-raises any exception
+                reporter.report(path)
+        except Exception:
+            reporter.clear()
+            raise
 
 
 def make_alt_text(filename: str) -> str:
