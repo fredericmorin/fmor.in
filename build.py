@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """Static site builder for fmor.in photoblog and gallery."""
 
+import json
+import shutil
 import sys
 from pathlib import Path
+
+from jinja2 import Environment, FileSystemLoader
 
 import exifread
 from PIL import Image
@@ -198,3 +202,141 @@ def generate_gallery_images(photos: list[dict], output_dir: Path):
             for ext, fmt in IMAGE_FORMATS.items():
                 out_path = output_dir / f"{stem}-{size}.{ext}"
                 resize_and_save(photo["source"], out_path, size, fmt)
+
+
+def make_alt_text(filename: str) -> str:
+    """Generate alt text from filename: replace underscores/hyphens with spaces."""
+    stem = Path(filename).stem
+    return stem.replace("_", " ").replace("-", " ")
+
+
+def build_photo_json(photos: list[dict], base_path: str, sizes: list[int]) -> str:
+    """Build JSON manifest for JS consumption."""
+    items = []
+    for photo in photos:
+        index = photo.get("index", photo["source"].stem)
+        items.append({
+            "base": f"{base_path}/{index}",
+            "sizes": sizes,
+            "exif": photo.get("exif", {}),
+            "date": photo.get("exif", {}).get("date", ""),
+            "alt": make_alt_text(photo["source"].name),
+        })
+    return json.dumps(items)
+
+
+def build_gallery_photo_json(photos: list[dict], gallery_name: str) -> str:
+    """Build JSON manifest for gallery lightbox."""
+    items = []
+    for photo in photos:
+        stem = photo["source"].stem
+        items.append({
+            "base": f"/gallery/{gallery_name}/photos/{stem}",
+            "sizes": GALLERY_SIZES,
+            "exif": photo.get("exif", {}),
+            "date": photo.get("exif", {}).get("date", ""),
+            "alt": make_alt_text(photo["source"].name),
+        })
+    return json.dumps(items)
+
+
+def build_site(project_root: Path):
+    """Main build function: scan, generate images, render templates."""
+    content_dir = project_root / "content"
+    output_dir = project_root / "output"
+    template_dir = project_root / "templates"
+    static_dir = project_root / "static"
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # 1. Scan content
+    photoblog_photos = scan_photoblog(content_dir / "photoblog")
+    galleries = scan_galleries(content_dir / "galleries")
+
+    # 2. Generate responsive images
+    if photoblog_photos:
+        generate_photoblog_images(
+            photoblog_photos,
+            output_dir / "photoblog" / "photos",
+        )
+
+    for gallery in galleries:
+        gallery_out = output_dir / "gallery" / gallery["name"] / "photos"
+        generate_gallery_images(gallery["photos"], gallery_out)
+
+        # Generate cover image if it's a separate _cover file
+        cover_path = gallery["cover"]
+        if cover_path.stem.lower() == "_cover":
+            # Generate cover sizes into the gallery photos dir
+            cover_photos = [{"source": cover_path, "exif": {}}]
+            generate_gallery_images(cover_photos, gallery_out)
+
+        # Store cover stem for templates
+        gallery["cover_stem"] = cover_path.stem
+
+    # 3. Render templates
+    env = Environment(loader=FileSystemLoader(str(template_dir)))
+
+    # Landing page
+    index_tmpl = env.get_template("index.html")
+    (output_dir / "index.html").write_text(index_tmpl.render())
+
+    # Photoblog
+    (output_dir / "photoblog").mkdir(parents=True, exist_ok=True)
+    pb_tmpl = env.get_template("photoblog.html")
+    photos_json = build_photo_json(photoblog_photos, "/photoblog/photos", PHOTOBLOG_SIZES)
+    (output_dir / "photoblog" / "index.html").write_text(
+        pb_tmpl.render(
+            section="photoblog",
+            photos=photoblog_photos,
+            photos_json=photos_json,
+        )
+    )
+
+    # Gallery index
+    (output_dir / "gallery").mkdir(parents=True, exist_ok=True)
+    gi_tmpl = env.get_template("gallery_index.html")
+    (output_dir / "gallery" / "index.html").write_text(
+        gi_tmpl.render(section="gallery", galleries=galleries)
+    )
+
+    # Individual gallery pages
+    g_tmpl = env.get_template("gallery.html")
+    for gallery in galleries:
+        gal_out = output_dir / "gallery" / gallery["name"]
+        gal_out.mkdir(parents=True, exist_ok=True)
+
+        photo_data = []
+        for p in gallery["photos"]:
+            photo_data.append({
+                "stem": p["source"].stem,
+                "alt": make_alt_text(p["source"].name),
+                "exif": p.get("exif", {}),
+            })
+
+        photos_json = build_gallery_photo_json(gallery["photos"], gallery["name"])
+        (gal_out / "index.html").write_text(
+            g_tmpl.render(
+                section="gallery",
+                gallery_name=gallery["name"],
+                photos=photo_data,
+                photos_json=photos_json,
+            )
+        )
+
+    # 4. Copy static assets
+    static_out = output_dir / "static"
+    if static_out.exists():
+        shutil.rmtree(static_out)
+    shutil.copytree(str(static_dir), str(static_out))
+
+    # Copy favicon to root if it exists
+    favicon = static_dir / "favicon.ico"
+    if favicon.exists():
+        shutil.copy2(str(favicon), str(output_dir / "favicon.ico"))
+
+    print(f"Build complete: {len(photoblog_photos)} photoblog photos, {len(galleries)} galleries")
+
+
+if __name__ == "__main__":
+    build_site(Path("."))
