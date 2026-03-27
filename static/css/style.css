@@ -159,21 +159,6 @@ main {
     z-index: 5;
 }
 
-.photoblog-gallery-link {
-    position: absolute;
-    top: 12px;
-    left: 20px;
-    font-size: 11px;
-    color: #555;
-    z-index: 5;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.photoblog-gallery-link:hover {
-    color: #aaa;
-}
-
 /* === EXIF Bar === */
 .exif-bar {
     background: #111;
@@ -260,6 +245,21 @@ main {
 .gallery-back:focus-visible {
     outline: 1px solid #fff;
     outline-offset: 2px;
+}
+
+.photoblog-gallery-link {
+    position: absolute;
+    top: 12px;
+    left: 20px;
+    font-size: 11px;
+    color: #555;
+    z-index: 5;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.photoblog-gallery-link:hover {
+    color: #aaa;
 }
 
 .gallery-title {
