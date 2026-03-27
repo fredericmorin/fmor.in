@@ -74,19 +74,18 @@
     function initSlideshow() {
         if (!window.PHOTOS || window.PHOTOS.length === 0) return;
 
-        var hash = parseInt(location.hash.replace("#", ""), 10);
-        if (hash > 0 && hash <= window.PHOTOS.length) {
-            slideshowIndex = hash - 1;
+        var hash = location.hash.replace("#", "");
+        if (hash) {
+            var idx = window.PHOTOS.findIndex(function (p) { return p.slug === hash; });
+            if (idx !== -1) slideshowIndex = idx;
         }
 
         showSlide(slideshowIndex);
 
         window.addEventListener("hashchange", function () {
-            var h = parseInt(location.hash.replace("#", ""), 10);
-            if (h > 0 && h <= window.PHOTOS.length) {
-                slideshowIndex = h - 1;
-                showSlide(slideshowIndex);
-            }
+            var h = location.hash.replace("#", "");
+            var idx = window.PHOTOS.findIndex(function (p) { return p.slug === h; });
+            if (idx !== -1) showSlide(idx);
         });
     }
 
@@ -106,7 +105,7 @@
         var exifEl = document.getElementById("exif-container");
         if (exifEl) exifEl.innerHTML = buildExif(photo.exif, photo.date);
 
-        location.hash = "#" + (index + 1);
+        location.hash = "#" + photo.slug;
 
         // Preload adjacent
         if (index > 0) preloadImage(photos[index - 1]);

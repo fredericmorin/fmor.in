@@ -288,6 +288,7 @@ def build_photo_json(photos: list[dict], base_path: str, sizes: list[int]) -> st
     for photo in photos:
         slug = photo.get("slug") or slugify(photo["source"].stem)
         items.append({
+            "slug": slug,
             "base": f"{base_path}/{slug}",
             "sizes": sizes,
             "exif": photo.get("exif", {}),

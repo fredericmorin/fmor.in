@@ -18,7 +18,7 @@
 
 <div class="thumbnail-grid">
     {% for photo in photos %}
-    <a href="/photoblog/#{{ loop.index }}" class="thumbnail" aria-label="View {{ photo.alt }}">
+    <a href="/photoblog/#{{ photo.slug }}" class="thumbnail" aria-label="View {{ photo.alt }}">
         <picture>
             <source type="image/avif"
                 srcset="/photoblog/photos/{{ photo.slug }}-400.avif 400w, /photoblog/photos/{{ photo.slug }}-800.avif 800w"

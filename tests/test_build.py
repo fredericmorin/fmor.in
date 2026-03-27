@@ -119,5 +119,5 @@ def test_photoblog_gallery_page_is_generated(tmp_path):
 
     content_html = gallery_page.read_text()
     assert "thumbnail-grid" in content_html
-    assert 'href="/photoblog/#1"' in content_html
+    assert 'href="/photoblog/#photo1"' in content_html
     assert "photo1" in content_html or "photo2" in content_html
