@@ -3,6 +3,7 @@
 
 import json
 import os
+import re
 import shutil
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -65,6 +66,13 @@ class Reporter:
             except (AttributeError, OSError):
                 cols = 80
             print(f"\r{' ' * cols}\r", end="", flush=True, file=sys.stderr)
+
+
+def slugify(text: str) -> str:
+    """Convert a filename stem to a URL-safe slug."""
+    text = text.lower()
+    text = re.sub(r"[^a-z0-9]+", "-", text)
+    return text.strip("-")
 
 
 def extract_exif(photo_path: Path) -> dict:
@@ -229,15 +237,15 @@ def resize_and_save(source: Path, output_path: Path, max_width: int, fmt: str):
 
 
 def collect_photoblog_tasks(photos: list[dict], output_dir: Path) -> list[tuple]:
-    """Return image tasks for photoblog photos. Sets photo['index'] as a side effect."""
+    """Return image tasks for photoblog photos. Sets photo['slug'] as a side effect."""
     output_dir.mkdir(parents=True, exist_ok=True)
     tasks = []
-    for i, photo in enumerate(photos, 1):
-        index = f"{i:03d}"
-        photo["index"] = index
+    for photo in photos:
+        slug = slugify(photo["source"].stem)
+        photo["slug"] = slug
         for size in PHOTOBLOG_SIZES:
             for ext, fmt in IMAGE_FORMATS.items():
-                out_path = output_dir / f"{index}-{size}.{ext}"
+                out_path = output_dir / f"{slug}-{size}.{ext}"
                 tasks.append((photo["source"], out_path, size, fmt))
     return tasks
 
@@ -247,10 +255,10 @@ def collect_gallery_tasks(photos: list[dict], output_dir: Path) -> list[tuple]:
     output_dir.mkdir(parents=True, exist_ok=True)
     tasks = []
     for photo in photos:
-        stem = photo["source"].stem
+        slug = slugify(photo["source"].stem)
         for size in GALLERY_SIZES:
             for ext, fmt in IMAGE_FORMATS.items():
-                out_path = output_dir / f"{stem}-{size}.{ext}"
+                out_path = output_dir / f"{slug}-{size}.{ext}"
                 tasks.append((photo["source"], out_path, size, fmt))
     return tasks
 
@@ -278,9 +286,9 @@ def build_photo_json(photos: list[dict], base_path: str, sizes: list[int]) -> st
     """Build JSON manifest for JS consumption."""
     items = []
     for photo in photos:
-        index = photo.get("index", photo["source"].stem)
+        slug = photo.get("slug") or slugify(photo["source"].stem)
         items.append({
-            "base": f"{base_path}/{index}",
+            "base": f"{base_path}/{slug}",
             "sizes": sizes,
             "exif": photo.get("exif", {}),
             "date": photo.get("exif", {}).get("date", ""),
@@ -293,9 +301,9 @@ def build_gallery_photo_json(photos: list[dict], gallery_name: str) -> str:
     """Build JSON manifest for gallery lightbox."""
     items = []
     for photo in photos:
-        stem = photo["source"].stem
+        slug = slugify(photo["source"].stem)
         items.append({
-            "base": f"/gallery/{gallery_name}/photos/{stem}",
+            "base": f"/gallery/{gallery_name}/photos/{slug}",
             "sizes": GALLERY_SIZES,
             "exif": photo.get("exif", {}),
             "date": photo.get("exif", {}).get("date", ""),
@@ -333,7 +341,7 @@ def build_site(project_root: Path):
             cover_photos = [{"source": cover_path, "exif": {}}]
             all_tasks.extend(collect_gallery_tasks(cover_photos, gallery_out))
 
-        gallery["cover_stem"] = cover_path.stem
+        gallery["cover_stem"] = slugify(cover_path.stem)
 
     reporter = Reporter(total=len(all_tasks))
     run_image_tasks(all_tasks, reporter)
@@ -373,7 +381,7 @@ def build_site(project_root: Path):
         photo_data = []
         for p in gallery["photos"]:
             photo_data.append({
-                "stem": p["source"].stem,
+                "stem": slugify(p["source"].stem),
                 "alt": make_alt_text(p["source"].name),
                 "exif": p.get("exif", {}),
             })
