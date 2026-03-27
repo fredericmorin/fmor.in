@@ -227,31 +227,6 @@
         }
     });
 
-    // --- Touch/swipe navigation ---
-
-    var touchStartX = 0;
-    var touchStartY = 0;
-
-    document.addEventListener("touchstart", function (e) {
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
-    }, { passive: true });
-
-    document.addEventListener("touchend", function (e) {
-        var dx = e.changedTouches[0].screenX - touchStartX;
-        var dy = e.changedTouches[0].screenY - touchStartY;
-
-        // Only trigger if horizontal swipe is dominant and > 50px
-        if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return;
-
-        var delta = dx > 0 ? -1 : 1;
-
-        if (lightboxOpen) {
-            navigateLightbox(delta);
-        } else if (window.PHOTOS) {
-            navigatePhoto(delta);
-        }
-    }, { passive: true });
 
     // --- Lightbox backdrop click to close ---
 
