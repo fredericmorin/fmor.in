@@ -1,0 +1,7 @@
+output/
+content/
+__pycache__/
+*.pyc
+.venv/
+.superpowers/
+/.worktrees/
