@@ -365,6 +365,21 @@ def build_site(project_root: Path):
         )
     )
 
+    # Photoblog gallery view
+    (output_dir / "photoblog" / "gallery").mkdir(parents=True, exist_ok=True)
+    pbg_tmpl = env.get_template("photoblog_gallery.html")
+    pb_photo_data = [
+        {"slug": p["slug"], "alt": make_alt_text(p["source"].name)}
+        for p in photoblog_photos
+    ]
+    (output_dir / "photoblog" / "gallery" / "index.html").write_text(
+        pbg_tmpl.render(
+            section="photoblog",
+            photos=pb_photo_data,
+            photos_json=photos_json,
+        )
+    )
+
     # Gallery index
     (output_dir / "gallery").mkdir(parents=True, exist_ok=True)
     gi_tmpl = env.get_template("gallery_index.html")
