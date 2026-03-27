@@ -376,7 +376,6 @@ def build_site(project_root: Path):
         pbg_tmpl.render(
             section="photoblog",
             photos=pb_photo_data,
-            photos_json=photos_json,
         )
     )
 

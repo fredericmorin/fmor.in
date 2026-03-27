@@ -9,12 +9,6 @@
 {% endif %}
 {% endblock %}
 
-{% block head_extra %}
-<script>
-    window.GALLERY_PHOTOS = {{ photos_json | safe }};
-</script>
-{% endblock %}
-
 {% block content %}
 <div class="gallery-header">
     <a href="/photoblog/" class="gallery-back" aria-label="Back to slideshow">← Slideshow</a>
@@ -24,7 +18,7 @@
 
 <div class="thumbnail-grid">
     {% for photo in photos %}
-    <div class="thumbnail" data-index="{{ loop.index0 }}" onclick="openLightbox({{ loop.index0 }})" role="button" aria-label="View {{ photo.alt }}" tabindex="0">
+    <a href="/photoblog/#{{ loop.index }}" class="thumbnail" aria-label="View {{ photo.alt }}">
         <picture>
             <source type="image/avif"
                 srcset="/photoblog/photos/{{ photo.slug }}-400.avif 400w, /photoblog/photos/{{ photo.slug }}-800.avif 800w"
@@ -37,28 +31,7 @@
                 alt="{{ photo.alt }}"
                 loading="lazy">
         </picture>
-    </div>
+    </a>
     {% endfor %}
-</div>
-
-<!-- Lightbox -->
-<div class="lightbox" id="lightbox" role="dialog" aria-label="Photo viewer" aria-modal="true">
-    <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close lightbox">✕</button>
-
-    <div class="lightbox-photo">
-        <div class="nav-zone nav-zone--prev" onclick="navigateLightbox(-1)" role="button" aria-label="Previous photo" tabindex="0">
-            <span class="arrow">‹</span>
-        </div>
-
-        <picture id="lightbox-picture"></picture>
-
-        <div class="nav-zone nav-zone--next" onclick="navigateLightbox(1)" role="button" aria-label="Next photo" tabindex="0">
-            <span class="arrow">›</span>
-        </div>
-
-        <div class="photo-counter" id="lightbox-counter"></div>
-    </div>
-
-    <div id="lightbox-exif"></div>
 </div>
 {% endblock %}
