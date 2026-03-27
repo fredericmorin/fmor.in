@@ -5,8 +5,12 @@ import sys
 from pathlib import Path
 
 import exifread
+from PIL import Image
 
 ACCEPTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tiff"}
+PHOTOBLOG_SIZES = [800, 1920, 3200]
+GALLERY_SIZES = [400, 800, 1920, 3200]
+IMAGE_FORMATS = {"avif": "AVIF", "jpg": "JPEG"}
 
 
 def extract_exif(photo_path: Path) -> dict:
@@ -139,3 +143,58 @@ def scan_galleries(galleries_dir: Path) -> list[dict]:
         })
 
     return galleries
+
+
+def resize_and_save(source: Path, output_path: Path, max_width: int, fmt: str):
+    """Resize image to max_width (preserving aspect ratio) and save."""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Skip if output is newer than source
+    if output_path.exists() and output_path.stat().st_mtime > source.stat().st_mtime:
+        return
+
+    with Image.open(source) as img:
+        if img.width > max_width:
+            ratio = max_width / img.width
+            new_height = int(img.height * ratio)
+            img = img.resize((max_width, new_height), Image.LANCZOS)
+
+        # Convert to RGB if necessary (e.g., RGBA PNGs)
+        if img.mode not in ("RGB", "L"):
+            img = img.convert("RGB")
+
+        save_kwargs = {}
+        if fmt == "JPEG":
+            save_kwargs["quality"] = 85
+            save_kwargs["optimize"] = True
+        elif fmt == "AVIF":
+            save_kwargs["quality"] = 65
+
+        img.save(output_path, fmt, **save_kwargs)
+
+
+def generate_photoblog_images(photos: list[dict], output_dir: Path):
+    """Generate responsive images for photoblog photos."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    for i, photo in enumerate(photos, 1):
+        index = f"{i:03d}"
+        for size in PHOTOBLOG_SIZES:
+            for ext, fmt in IMAGE_FORMATS.items():
+                out_path = output_dir / f"{index}-{size}.{ext}"
+                resize_and_save(photo["source"], out_path, size, fmt)
+
+        # Store output paths for template rendering
+        photo["index"] = index
+
+
+def generate_gallery_images(photos: list[dict], output_dir: Path):
+    """Generate responsive images for gallery photos (includes 400px thumbnail)."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    for photo in photos:
+        stem = photo["source"].stem
+        for size in GALLERY_SIZES:
+            for ext, fmt in IMAGE_FORMATS.items():
+                out_path = output_dir / f"{stem}-{size}.{ext}"
+                resize_and_save(photo["source"], out_path, size, fmt)
