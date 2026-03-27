@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Gallery — fmor.in{% endblock %}
+{% block og_title %}Gallery — fmor.in{% endblock %}
+{% block og_image %}
+{% if galleries %}
+<meta property="og:image" content="/gallery/{{ galleries[0].name }}/photos/{{ galleries[0].cover_stem }}-1920.jpg">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="gallery-grid">
+    {% for gallery in galleries %}
+    <a href="/gallery/{{ gallery.name }}/" class="gallery-card">
+        <picture>
+            <source type="image/avif"
+                srcset="/gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-400.avif 400w, /gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-800.avif 800w, /gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-1920.avif 1920w"
+                sizes="(max-width: 768px) 50vw, 33vw">
+            <img
+                src="/gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-800.jpg"
+                srcset="/gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-400.jpg 400w, /gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-800.jpg 800w, /gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-1920.jpg 1920w"
+                sizes="(max-width: 768px) 50vw, 33vw"
+                alt="{{ gallery.name | replace('_', ' ') | replace('-', ' ') }}"
+                loading="lazy">
+        </picture>
+        <div class="gallery-card-info">
+            <div class="gallery-card-name">{{ gallery.name | replace('_', ' ') | replace('-', ' ') | title }}</div>
+            <div class="gallery-card-count">{{ gallery.count }} photo{{ 's' if gallery.count != 1 }}</div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}
