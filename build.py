@@ -15,7 +15,7 @@ import exifread
 from PIL import Image
 
 ACCEPTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tiff"}
-PHOTOBLOG_SIZES = [800, 1920, 3200]
+PHOTOBLOG_SIZES = [400, 800, 1920, 3200]
 GALLERY_SIZES = [400, 800, 1920, 3200]
 IMAGE_FORMATS = {"avif": "AVIF", "jpg": "JPEG"}
 
@@ -362,6 +362,20 @@ def build_site(project_root: Path):
             section="photoblog",
             photos=photoblog_photos,
             photos_json=photos_json,
+        )
+    )
+
+    # Photoblog gallery view
+    (output_dir / "photoblog" / "gallery").mkdir(parents=True, exist_ok=True)
+    pbg_tmpl = env.get_template("photoblog_gallery.html")
+    pb_photo_data = [
+        {"slug": p["slug"], "alt": make_alt_text(p["source"].name)}
+        for p in photoblog_photos
+    ]
+    (output_dir / "photoblog" / "gallery" / "index.html").write_text(
+        pbg_tmpl.render(
+            section="photoblog",
+            photos=pb_photo_data,
         )
     )
 
