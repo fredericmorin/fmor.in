@@ -15,7 +15,7 @@ import exifread
 from PIL import Image
 
 ACCEPTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tiff"}
-PHOTOBLOG_SIZES = [800, 1920, 3200]
+PHOTOBLOG_SIZES = [400, 800, 1920, 3200]
 GALLERY_SIZES = [400, 800, 1920, 3200]
 IMAGE_FORMATS = {"avif": "AVIF", "jpg": "JPEG"}
 

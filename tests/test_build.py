@@ -34,8 +34,8 @@ def test_full_build_produces_output(tmp_path):
 
     # Check responsive images were generated
     pb_photos = output / "photoblog" / "photos"
-    assert (pb_photos / "001-800.avif").exists()
-    assert (pb_photos / "001-3200.jpg").exists()
+    assert (pb_photos / "photo1-400.avif").exists()
+    assert (pb_photos / "photo1-3200.jpg").exists()
 
     gal_photos = output / "gallery" / "testgal" / "photos"
     assert (gal_photos / "img1-400.avif").exists()
@@ -68,8 +68,8 @@ def test_full_build_parallel_generates_all_images(tmp_path):
 
     out = tmp_path / "output"
     pb_photos = out / "photoblog" / "photos"
-    # 2 photos x 3 sizes x 2 formats = 12 files
-    assert len(list(pb_photos.iterdir())) == 12
+    # 2 photos x 4 sizes x 2 formats = 16 files
+    assert len(list(pb_photos.iterdir())) == 16
 
     gal_photos = out / "gallery" / "mygal" / "photos"
     # 3 photos x 4 sizes x 2 formats = 24 files
