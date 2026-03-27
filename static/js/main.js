@@ -12,12 +12,10 @@
             return photo.base + "-" + s + ".jpg " + s + "w";
         }).join(", ");
 
-        // Find the 1920 size for fallback, or use the middle size
         var fallbackSize = photo.sizes.indexOf(1920) !== -1 ? 1920 : photo.sizes[Math.floor(photo.sizes.length / 2)];
         return '<source type="image/avif" srcset="' + avifSrcset + '" sizes="' + sizes + '">' +
+            '<source type="image/jpeg" srcset="' + jpgSrcset + '" sizes="' + sizes + '">' +
             '<img src="' + photo.base + '-' + fallbackSize + '.jpg"' +
-            ' srcset="' + jpgSrcset + '"' +
-            ' sizes="' + sizes + '"' +
             ' alt="' + (photo.alt || "") + '">';
     }
 

@@ -16,10 +16,11 @@
             <source type="image/avif"
                 srcset="/gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-400.avif 400w, /gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-800.avif 800w, /gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-1920.avif 1920w"
                 sizes="(max-width: 768px) 50vw, 33vw">
+            <source type="image/jpeg"
+                srcset="/gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-400.jpg 400w, /gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-800.jpg 800w, /gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-1920.jpg 1920w"
+                sizes="(max-width: 768px) 50vw, 33vw">
             <img
                 src="/gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-800.jpg"
-                srcset="/gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-400.jpg 400w, /gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-800.jpg 800w, /gallery/{{ gallery.name }}/photos/{{ gallery.cover_stem }}-1920.jpg 1920w"
-                sizes="(max-width: 768px) 50vw, 33vw"
                 alt="{{ gallery.name | replace('_', ' ') | replace('-', ' ') }}"
                 loading="lazy">
         </picture>
