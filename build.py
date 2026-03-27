@@ -32,6 +32,7 @@ class Reporter:
         self._is_tty = sys.stderr.isatty() if is_tty is None else is_tty
 
     def report(self, path: Path):
+        """Record a completed image task. Must be called from a single thread."""
         self._done += 1
         rel = str(path)
         if self._is_tty:

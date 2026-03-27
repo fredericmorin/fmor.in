@@ -60,8 +60,6 @@ def test_full_build_parallel_generates_all_images(tmp_path):
     make_test_image(gal / "img2.jpg")
     make_test_image(gal / "img3.jpg")
 
-    project_root = tmp_path.parent.parent  # get actual project root
-    from pathlib import Path
     real_root = Path(__file__).parent.parent
     shutil.copytree(real_root / "templates", tmp_path / "templates")
     shutil.copytree(real_root / "static", tmp_path / "static")
