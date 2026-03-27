@@ -28,10 +28,11 @@
             <source type="image/avif"
                 srcset="/gallery/{{ gallery_name }}/photos/{{ photo.stem }}-400.avif 400w, /gallery/{{ gallery_name }}/photos/{{ photo.stem }}-800.avif 800w"
                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw">
+            <source type="image/jpeg"
+                srcset="/gallery/{{ gallery_name }}/photos/{{ photo.stem }}-400.jpg 400w, /gallery/{{ gallery_name }}/photos/{{ photo.stem }}-800.jpg 800w"
+                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw">
             <img
                 src="/gallery/{{ gallery_name }}/photos/{{ photo.stem }}-400.jpg"
-                srcset="/gallery/{{ gallery_name }}/photos/{{ photo.stem }}-400.jpg 400w, /gallery/{{ gallery_name }}/photos/{{ photo.stem }}-800.jpg 800w"
-                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                 alt="{{ photo.alt }}"
                 loading="lazy">
         </picture>
