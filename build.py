@@ -104,6 +104,12 @@ def extract_exif(photo_path: Path) -> dict:
     for field, tag_name in field_map.items():
         value = get(tag_name)
         if value:
+            if field == "aperture" and "/" in value:
+                try:
+                    num, den = value.split("/")
+                    value = f"{float(num) / float(den):g}"
+                except (ValueError, ZeroDivisionError):
+                    pass
             exif[field] = value
 
     return exif
