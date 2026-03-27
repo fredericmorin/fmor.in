@@ -82,7 +82,7 @@
 
         showSlide(slideshowIndex);
 
-        window.addEventListener("hashchange", function () {
+        window.addEventListener("popstate", function () {
             var h = location.hash.replace("#", "");
             var idx = window.PHOTOS.findIndex(function (p) { return p.slug === h; });
             if (idx !== -1) showSlide(idx);
@@ -105,7 +105,7 @@
         var exifEl = document.getElementById("exif-container");
         if (exifEl) exifEl.innerHTML = buildExif(photo.exif, photo.date);
 
-        location.hash = "#" + photo.slug;
+        history.replaceState(null, "", "#" + photo.slug);
 
         // Preload adjacent
         if (index > 0) preloadImage(photos[index - 1]);
@@ -149,7 +149,7 @@
         var lb = document.getElementById("lightbox");
         if (lb) lb.classList.remove("open");
 
-        location.hash = "";
+        history.replaceState(null, "", location.pathname);
 
         if (previousFocus) previousFocus.focus();
     };
@@ -177,7 +177,7 @@
         var exifEl = document.getElementById("lightbox-exif");
         if (exifEl) exifEl.innerHTML = buildExif(photo.exif, photo.date);
 
-        location.hash = "#" + (index + 1);
+        history.replaceState(null, "", "#" + (index + 1));
 
         // Preload adjacent
         if (index > 0) preloadImage(photos[index - 1]);
