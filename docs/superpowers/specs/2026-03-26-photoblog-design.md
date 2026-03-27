@@ -6,7 +6,7 @@ A static photography website with two sections — a full-screen slideshow photo
 
 **Domain:** fmor.in
 **Stack:** Python (build), HTML/CSS/JS (output), no backend
-**Build tools:** Pillow, pillow-avif-plugin, Jinja2, exifread
+**Build tools:** Pillow (10.1+ with built-in AVIF support), Jinja2, exifread
 **Package management:** uv
 
 ## Project Structure
@@ -47,15 +47,24 @@ fmor.in/
         └── js/
 ```
 
+## Accepted Source Formats
+
+`.jpg`, `.jpeg`, `.png`, `.tiff` — other files in content folders are silently ignored.
+
 ## Build Pipeline
 
 Invoked via `make build` which calls `build.py`.
 
-1. **Scan** `content/` folder tree, build photo manifest (path, EXIF metadata, sort order)
-2. **Generate responsive images** — for each source photo, produce 3 sizes (800px, 1600px, 2400px) × 2 formats (AVIF, JPEG) into `output/`. Skip files already up-to-date based on mtime (incremental builds).
-3. **Generate gallery covers** — first photo of each gallery folder, resized for the cover grid
-4. **Render templates** — Jinja2 templates produce HTML files in `output/`
+1. **Scan** `content/` folder tree, build photo manifest (path, EXIF metadata, sort order). Empty folders are skipped (no HTML generated) and a warning is emitted to stderr.
+2. **Generate responsive images** — for each source photo, produce 3 sizes (800px, 1600px, 2400px) × 2 formats (AVIF, JPEG) into `output/`. Skip files already up-to-date based on source file mtime (incremental builds). Mtime-based skipping applies only to image generation.
+3. **Generate gallery covers** — cover photo of each gallery folder (see Gallery Index section), resized for the cover grid
+4. **Render templates** — Jinja2 templates are always re-rendered on every build (cheap operation). Produces HTML files in `output/`.
 5. **Copy static assets** — `static/` → `output/static/`
+
+### Output file naming
+
+- **Photoblog:** `output/photoblog/photos/<index>-<size>.<fmt>` where `<index>` is a zero-padded position based on sort order (e.g., `001-800.avif`). This avoids collisions from duplicate source filenames.
+- **Galleries:** `output/gallery/<folder-name>/photos/<original-stem>-<size>.<fmt>`. Files are scoped under their gallery subfolder, so collisions across galleries are not possible. If two source files in the same gallery share a stem (e.g., `sunset.jpg` and `sunset.png`), the build fails with an error.
 
 ### Makefile Targets
 
@@ -65,7 +74,7 @@ Invoked via `make build` which calls `build.py`.
 
 ## Responsive Images
 
-Each photo generates 6 files: 3 sizes × 2 formats.
+Each photoblog photo generates 6 files: 3 sizes × 2 formats. Gallery photos generate 8 files (4 sizes including a 400px thumbnail size).
 
 ```
 photo-001-800.avif    photo-001-800.jpg
@@ -73,7 +82,7 @@ photo-001-1600.avif   photo-001-1600.jpg
 photo-001-2400.avif   photo-001-2400.jpg
 ```
 
-Served via `<picture>` element:
+Served via `<picture>` element (example shows photoblog/lightbox `sizes`; see context-specific values below):
 
 ```html
 <picture>
@@ -88,6 +97,13 @@ Served via `<picture>` element:
 
 The browser selects the appropriate size based on viewport width and device pixel ratio.
 
+**`sizes` attribute varies by context:**
+- Photoblog slideshow and lightbox: `sizes="100vw"`
+- Gallery thumbnails: `sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"`
+- Gallery covers: `sizes="(max-width: 768px) 50vw, 33vw"`
+
+Gallery thumbnails additionally generate a smaller 400px size for the grid (4 sizes total for gallery photos: 400, 800, 1600, 2400).
+
 ## EXIF Metadata
 
 Extracted at build time using exifread, embedded as JSON in the generated HTML.
@@ -95,6 +111,8 @@ Extracted at build time using exifread, embedded as JSON in the generated HTML.
 **Fields displayed:** camera model, lens, focal length, aperture, shutter speed, ISO, date taken, white balance, metering mode, exposure compensation.
 
 **GPS data is excluded.**
+
+**Missing EXIF data:** Fields that are absent are silently omitted from the display. If date taken is absent, fall back to file modification time for sorting. If no EXIF data exists at all, the EXIF bar is hidden.
 
 **Presentation:** Compact single-line bar below the photo. Date left-aligned, all other fields right-aligned, dot-separated. Small subtle text (~10px, #555/#666 on dark background).
 
@@ -130,9 +148,11 @@ Extracted at build time using exifread, embedded as JSON in the generated HTML.
 
 **Layout:** Responsive grid of gallery cover cards. Each card shows:
 
-- Cover image (first photo from the folder)
+- Cover image: by default, the first photo in the gallery's sort order. Can be overridden by placing a `_cover.jpg` (or any accepted format with `_cover` stem) in the folder. `_cover.*` files are excluded from the gallery photo list — they are used only as the cover.
 - Gallery name (folder name) overlaid at bottom with gradient
 - Photo count
+
+**Sort order:** Galleries are listed alphabetically by folder name.
 
 **Grid columns:** 2 on mobile, 3 on desktop.
 
@@ -143,6 +163,8 @@ Extracted at build time using exifread, embedded as JSON in the generated HTML.
 **Layout:** Breadcrumb ("← Galleries · Street") at top, then responsive thumbnail grid.
 
 **Grid:** Square thumbnails, 2 columns on mobile, 3-4 on desktop. Gap: 8px.
+
+**Sort order:** EXIF date taken, newest first. Filename as tiebreaker (same as photoblog).
 
 ### Lightbox
 
@@ -192,7 +214,7 @@ Small sizes throughout to minimize visual competition with photos.
 
 | Breakpoint | Gallery grid | Thumbnail grid | Notes |
 |------------|-------------|----------------|-------|
-| < 768px | 2 columns | 2 columns | Swipe nav, stacked header |
+| < 768px | 2 columns | 2 columns | Swipe nav, nav wraps below site name |
 | 768–1200px | 3 columns | 3 columns | Standard layout |
 | > 1200px | 3 columns | 4 columns | Full layout |
 
@@ -218,4 +240,17 @@ Small sizes throughout to minimize visual competition with photos.
 
 ## Landing Page
 
-`/index.html` redirects to `/photoblog/` (or serves as a simple entry point with links to both sections — to be decided during implementation).
+`/index.html` uses `<meta http-equiv="refresh" content="0;url=/photoblog/">` to redirect to the photoblog. This keeps the photoblog as the primary experience.
+
+## Accessibility
+
+- All `<img>` elements include an `alt` attribute (filename stem, cleaned up: underscores/hyphens replaced with spaces)
+- Navigation controls have `aria-label` attributes (e.g., "Next photo", "Previous photo", "Close lightbox")
+- Visible focus outlines on all interactive elements for keyboard navigation
+- `prefers-reduced-motion` media query disables slide transitions when the user prefers reduced motion
+- Lightbox traps focus while open and restores it on close
+
+## Social / Meta
+
+- OpenGraph tags on all pages (`og:title`, `og:image`, `og:type`)
+- Favicon (place `favicon.ico` in `static/`, copied to output root)
