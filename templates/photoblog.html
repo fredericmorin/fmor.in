@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Photoblog — fmor.in{% endblock %}
+{% block og_title %}Photoblog — fmor.in{% endblock %}
+{% block og_image %}
+{% if photos %}
+<meta property="og:image" content="/photoblog/photos/{{ photos[0].index }}-1920.jpg">
+{% endif %}
+{% endblock %}
+
+{% block head_extra %}
+<script>
+    window.PHOTOS = {{ photos_json | safe }};
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="slideshow" id="slideshow" data-section="photoblog">
+    <div class="slideshow-photo">
+        <div class="nav-zone nav-zone--prev" onclick="navigatePhoto(-1)" role="button" aria-label="Previous photo" tabindex="0">
+            <span class="arrow">‹</span>
+        </div>
+
+        <picture id="photo-picture">
+            {# Populated by JS from PHOTOS manifest #}
+        </picture>
+
+        <div class="nav-zone nav-zone--next" onclick="navigatePhoto(1)" role="button" aria-label="Next photo" tabindex="0">
+            <span class="arrow">›</span>
+        </div>
+
+        <div class="photo-counter" id="photo-counter"></div>
+    </div>
+
+    <div id="exif-container"></div>
+</div>
+{% endblock %}
