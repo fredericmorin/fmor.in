@@ -56,7 +56,7 @@ fmor.in/
 Invoked via `make build` which calls `build.py`.
 
 1. **Scan** `content/` folder tree, build photo manifest (path, EXIF metadata, sort order). Empty folders are skipped (no HTML generated) and a warning is emitted to stderr.
-2. **Generate responsive images** — for each source photo, produce 3 sizes (800px, 1600px, 2400px) × 2 formats (AVIF, JPEG) into `output/`. Skip files already up-to-date based on source file mtime (incremental builds). Mtime-based skipping applies only to image generation.
+2. **Generate responsive images** — for each source photo, produce 3 sizes (800px, 1920px, 3200px) × 2 formats (AVIF, JPEG) into `output/`. Skip files already up-to-date based on source file mtime (incremental builds). Mtime-based skipping applies only to image generation.
 3. **Generate gallery covers** — cover photo of each gallery folder (see Gallery Index section), resized for the cover grid
 4. **Render templates** — Jinja2 templates are always re-rendered on every build (cheap operation). Produces HTML files in `output/`.
 5. **Copy static assets** — `static/` → `output/static/`
@@ -78,8 +78,8 @@ Each photoblog photo generates 6 files: 3 sizes × 2 formats. Gallery photos gen
 
 ```
 photo-001-800.avif    photo-001-800.jpg
-photo-001-1600.avif   photo-001-1600.jpg
-photo-001-2400.avif   photo-001-2400.jpg
+photo-001-1920.avif   photo-001-1920.jpg
+photo-001-3200.avif   photo-001-3200.jpg
 ```
 
 Served via `<picture>` element (example shows photoblog/lightbox `sizes`; see context-specific values below):
@@ -87,22 +87,22 @@ Served via `<picture>` element (example shows photoblog/lightbox `sizes`; see co
 ```html
 <picture>
   <source type="image/avif"
-    srcset="photo-800.avif 800w, photo-1600.avif 1600w, photo-2400.avif 2400w"
+    srcset="photo-800.avif 800w, photo-1920.avif 1920w, photo-3200.avif 3200w"
     sizes="100vw">
-  <img src="photo-1600.jpg"
-    srcset="photo-800.jpg 800w, photo-1600.jpg 1600w, photo-2400.jpg 2400w"
+  <img src="photo-1920.jpg"
+    srcset="photo-800.jpg 800w, photo-1920.jpg 1920w, photo-3200.jpg 3200w"
     sizes="100vw">
 </picture>
 ```
 
-The browser selects the appropriate size based on viewport width and device pixel ratio.
+The browser selects the appropriate size based on viewport width and device pixel ratio. The ~2x stepping (800 → 1920 → 3200) minimizes both waste (downloading too much) and upscaling (not enough), covering phones through HiDPI/4K displays.
 
 **`sizes` attribute varies by context:**
 - Photoblog slideshow and lightbox: `sizes="100vw"`
 - Gallery thumbnails: `sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"`
 - Gallery covers: `sizes="(max-width: 768px) 50vw, 33vw"`
 
-Gallery thumbnails additionally generate a smaller 400px size for the grid (4 sizes total for gallery photos: 400, 800, 1600, 2400).
+Gallery thumbnails additionally generate a smaller 400px size for the grid (4 sizes total for gallery photos: 400, 800, 1920, 3200).
 
 ## EXIF Metadata
 
