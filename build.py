@@ -2,8 +2,10 @@
 """Static site builder for fmor.in photoblog and gallery."""
 
 import json
+import os
 import shutil
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
@@ -15,6 +17,54 @@ ACCEPTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tiff"}
 PHOTOBLOG_SIZES = [800, 1920, 3200]
 GALLERY_SIZES = [400, 800, 1920, 3200]
 IMAGE_FORMATS = {"avif": "AVIF", "jpg": "JPEG"}
+
+
+class Reporter:
+    """Progress reporter for image generation.
+
+    TTY mode: overwrites a single status line using \\r.
+    Non-TTY mode: prints one line per completed file.
+    """
+
+    def __init__(self, total: int, is_tty: bool | None = None):
+        self._total = total
+        self._done = 0
+        self._is_tty = sys.stderr.isatty() if is_tty is None else is_tty
+
+    def report(self, path: Path):
+        """Record a completed image task. Must be called from a single thread."""
+        self._done += 1
+        rel = str(path)
+        if self._is_tty:
+            try:
+                cols = os.get_terminal_size(sys.stderr.fileno()).columns
+            except (AttributeError, OSError):
+                cols = 80
+            line = f"[{self._done}/{self._total}] {rel}"
+            if len(line) > cols:
+                line = line[: cols - 1]
+            print(f"\r{line}", end="", flush=True, file=sys.stderr)
+        else:
+            print(rel, file=sys.stderr)
+
+    def finish(self, summary: str):
+        if self._is_tty:
+            try:
+                cols = os.get_terminal_size(sys.stderr.fileno()).columns
+            except (AttributeError, OSError):
+                cols = 80
+            print(f"\r{' ' * cols}\r{summary}", file=sys.stderr)
+        else:
+            print(summary, file=sys.stderr)
+
+    def clear(self):
+        """Clear the TTY status line (no-op in non-TTY mode). Call on error paths."""
+        if self._is_tty:
+            try:
+                cols = os.get_terminal_size(sys.stderr.fileno()).columns
+            except (AttributeError, OSError):
+                cols = 80
+            print(f"\r{' ' * cols}\r", end="", flush=True, file=sys.stderr)
 
 
 def extract_exif(photo_path: Path) -> dict:
@@ -155,7 +205,7 @@ def resize_and_save(source: Path, output_path: Path, max_width: int, fmt: str):
 
     # Skip if output is newer than source
     if output_path.exists() and output_path.stat().st_mtime > source.stat().st_mtime:
-        return
+        return output_path
 
     with Image.open(source) as img:
         if img.width > max_width:
@@ -175,33 +225,47 @@ def resize_and_save(source: Path, output_path: Path, max_width: int, fmt: str):
             save_kwargs["quality"] = 65
 
         img.save(output_path, fmt, **save_kwargs)
+    return output_path
 
 
-def generate_photoblog_images(photos: list[dict], output_dir: Path):
-    """Generate responsive images for photoblog photos."""
+def collect_photoblog_tasks(photos: list[dict], output_dir: Path) -> list[tuple]:
+    """Return image tasks for photoblog photos. Sets photo['index'] as a side effect."""
     output_dir.mkdir(parents=True, exist_ok=True)
-
+    tasks = []
     for i, photo in enumerate(photos, 1):
         index = f"{i:03d}"
+        photo["index"] = index
         for size in PHOTOBLOG_SIZES:
             for ext, fmt in IMAGE_FORMATS.items():
                 out_path = output_dir / f"{index}-{size}.{ext}"
-                resize_and_save(photo["source"], out_path, size, fmt)
-
-        # Store output paths for template rendering
-        photo["index"] = index
+                tasks.append((photo["source"], out_path, size, fmt))
+    return tasks
 
 
-def generate_gallery_images(photos: list[dict], output_dir: Path):
-    """Generate responsive images for gallery photos (includes 400px thumbnail)."""
+def collect_gallery_tasks(photos: list[dict], output_dir: Path) -> list[tuple]:
+    """Return image tasks for gallery photos."""
     output_dir.mkdir(parents=True, exist_ok=True)
-
+    tasks = []
     for photo in photos:
         stem = photo["source"].stem
         for size in GALLERY_SIZES:
             for ext, fmt in IMAGE_FORMATS.items():
                 out_path = output_dir / f"{stem}-{size}.{ext}"
-                resize_and_save(photo["source"], out_path, size, fmt)
+                tasks.append((photo["source"], out_path, size, fmt))
+    return tasks
+
+
+def run_image_tasks(tasks: list[tuple], reporter: "Reporter"):
+    """Execute image resize tasks in parallel using a thread pool."""
+    with ThreadPoolExecutor() as pool:
+        futures = {pool.submit(resize_and_save, *task): task for task in tasks}
+        try:
+            for future in as_completed(futures):
+                path = future.result()  # re-raises any exception
+                reporter.report(path)
+        except Exception:
+            reporter.clear()
+            raise
 
 
 def make_alt_text(filename: str) -> str:
@@ -253,26 +317,26 @@ def build_site(project_root: Path):
     photoblog_photos = scan_photoblog(content_dir / "photoblog")
     galleries = scan_galleries(content_dir / "galleries")
 
-    # 2. Generate responsive images
+    # 2. Collect and run image tasks in parallel
+    all_tasks: list[tuple] = []
+
     if photoblog_photos:
-        generate_photoblog_images(
-            photoblog_photos,
-            output_dir / "photoblog" / "photos",
-        )
+        pb_out = output_dir / "photoblog" / "photos"
+        all_tasks.extend(collect_photoblog_tasks(photoblog_photos, pb_out))
 
     for gallery in galleries:
         gallery_out = output_dir / "gallery" / gallery["name"] / "photos"
-        generate_gallery_images(gallery["photos"], gallery_out)
+        all_tasks.extend(collect_gallery_tasks(gallery["photos"], gallery_out))
 
-        # Generate cover image if it's a separate _cover file
         cover_path = gallery["cover"]
         if cover_path.stem.lower() == "_cover":
-            # Generate cover sizes into the gallery photos dir
             cover_photos = [{"source": cover_path, "exif": {}}]
-            generate_gallery_images(cover_photos, gallery_out)
+            all_tasks.extend(collect_gallery_tasks(cover_photos, gallery_out))
 
-        # Store cover stem for templates
         gallery["cover_stem"] = cover_path.stem
+
+    reporter = Reporter(total=len(all_tasks))
+    run_image_tasks(all_tasks, reporter)
 
     # 3. Render templates
     env = Environment(loader=FileSystemLoader(str(template_dir)))
@@ -335,7 +399,9 @@ def build_site(project_root: Path):
     if favicon.exists():
         shutil.copy2(str(favicon), str(output_dir / "favicon.ico"))
 
-    print(f"Build complete: {len(photoblog_photos)} photoblog photos, {len(galleries)} galleries")
+    reporter.finish(
+        f"Build complete: {len(photoblog_photos)} photoblog photos, {len(galleries)} galleries"
+    )
 
 
 if __name__ == "__main__":
