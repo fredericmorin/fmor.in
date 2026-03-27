@@ -41,9 +41,21 @@
         return html;
     }
 
-    function preloadImage(src) {
-        var img = new Image();
-        img.src = src;
+    var avifSupported = null;
+
+    function detectAvif(callback) {
+        if (avifSupported !== null) { callback(avifSupported); return; }
+        var probe = new Image();
+        probe.onload = function () { avifSupported = true; callback(true); };
+        probe.onerror = function () { avifSupported = false; callback(false); };
+        probe.src = "data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAABcAAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQAMAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAAB9tZGF0EgAKCBgABogQEAwgMg==";
+    }
+
+    function preloadImage(base, size) {
+        detectAvif(function (avif) {
+            var img = new Image();
+            img.src = base + "-" + size + (avif ? ".avif" : ".jpg");
+        });
     }
 
     // --- Slideshow (Photoblog) ---
@@ -88,8 +100,8 @@
         location.hash = "#" + (index + 1);
 
         // Preload adjacent
-        if (index > 0) preloadImage(photos[index - 1].base + "-1920.jpg");
-        if (index < photos.length - 1) preloadImage(photos[index + 1].base + "-1920.jpg");
+        if (index > 0) preloadImage(photos[index - 1].base, 1920);
+        if (index < photos.length - 1) preloadImage(photos[index + 1].base, 1920);
     }
 
     window.navigatePhoto = function (delta) {
@@ -160,8 +172,8 @@
         location.hash = "#" + (index + 1);
 
         // Preload adjacent
-        if (index > 0) preloadImage(photos[index - 1].base + "-1920.jpg");
-        if (index < photos.length - 1) preloadImage(photos[index + 1].base + "-1920.jpg");
+        if (index > 0) preloadImage(photos[index - 1].base, 1920);
+        if (index < photos.length - 1) preloadImage(photos[index + 1].base, 1920);
     }
 
     // --- Focus trap for lightbox ---

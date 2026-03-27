@@ -7,4 +7,4 @@ clean:
 	rm -rf output
 
 serve: build
-	cd output && python -m http.server 8000
+	cd output && uv run python -m http.server 8000
