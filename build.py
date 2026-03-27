@@ -155,7 +155,7 @@ def resize_and_save(source: Path, output_path: Path, max_width: int, fmt: str):
 
     # Skip if output is newer than source
     if output_path.exists() and output_path.stat().st_mtime > source.stat().st_mtime:
-        return
+        return output_path
 
     with Image.open(source) as img:
         if img.width > max_width:
@@ -175,6 +175,7 @@ def resize_and_save(source: Path, output_path: Path, max_width: int, fmt: str):
             save_kwargs["quality"] = 65
 
         img.save(output_path, fmt, **save_kwargs)
+    return output_path
 
 
 def generate_photoblog_images(photos: list[dict], output_dir: Path):

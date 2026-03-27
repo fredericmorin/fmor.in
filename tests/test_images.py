@@ -81,3 +81,12 @@ def test_generated_image_dimensions(tmp_path):
     img = Image.open(out / "001-800.jpg")
     assert img.width == 800
     assert img.height == 600  # 4:3 aspect preserved
+
+
+def test_resize_and_save_returns_output_path(tmp_path):
+    from build import resize_and_save
+    src = tmp_path / "src.jpg"
+    make_test_image(src, width=200, height=200)
+    out = tmp_path / "out-100.jpg"
+    result = resize_and_save(src, out, 100, "JPEG")
+    assert result == out
