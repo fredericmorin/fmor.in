@@ -49,10 +49,21 @@
         probe.src = "data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAABcAAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQAMAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAAB9tZGF0EgAKCBgABogQEAwgMg==";
     }
 
-    function preloadImage(base, size) {
+    function pickSize(sizes) {
+        var cssWidth = window.innerWidth || document.documentElement.clientWidth;
+        var dpr = window.devicePixelRatio || 1;
+        var target = cssWidth * dpr;
+        for (var i = 0; i < sizes.length; i++) {
+            if (sizes[i] >= target) return sizes[i];
+        }
+        return sizes[sizes.length - 1];
+    }
+
+    function preloadImage(photo) {
+        var size = pickSize(photo.sizes);
         detectAvif(function (avif) {
             var img = new Image();
-            img.src = base + "-" + size + (avif ? ".avif" : ".jpg");
+            img.src = photo.base + "-" + size + (avif ? ".avif" : ".jpg");
         });
     }
 
@@ -98,8 +109,8 @@
         location.hash = "#" + (index + 1);
 
         // Preload adjacent
-        if (index > 0) preloadImage(photos[index - 1].base, 1920);
-        if (index < photos.length - 1) preloadImage(photos[index + 1].base, 1920);
+        if (index > 0) preloadImage(photos[index - 1]);
+        if (index < photos.length - 1) preloadImage(photos[index + 1]);
     }
 
     window.navigatePhoto = function (delta) {
@@ -170,8 +181,8 @@
         location.hash = "#" + (index + 1);
 
         // Preload adjacent
-        if (index > 0) preloadImage(photos[index - 1].base, 1920);
-        if (index < photos.length - 1) preloadImage(photos[index + 1].base, 1920);
+        if (index > 0) preloadImage(photos[index - 1]);
+        if (index < photos.length - 1) preloadImage(photos[index + 1]);
     }
 
     // --- Focus trap for lightbox ---
