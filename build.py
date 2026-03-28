@@ -76,6 +76,23 @@ def slugify(text: str) -> str:
     return text.strip("-")
 
 
+def photo_slug(photo: dict) -> str:
+    """Return slug for a photo: slugified ISO8601 EXIF capture date if available, else filename slug.
+
+    EXIF date format: 'YYYY:MM:DD HH:MM:SS' → slug: 'yyyy-mm-ddthh-mm-ss'
+    """
+    from datetime import datetime
+
+    exif_date = photo.get("exif", {}).get("date", "")
+    if exif_date:
+        try:
+            dt = datetime.strptime(exif_date, "%Y:%m:%d %H:%M:%S")
+            return slugify(dt.strftime("%Y-%m-%dT%H:%M:%S"))
+        except ValueError:
+            pass
+    return slugify(photo["source"].stem)
+
+
 def extract_exif(photo_path: Path) -> dict:
     """Extract EXIF metadata from a photo. Returns dict of display fields."""
     try:
@@ -276,7 +293,7 @@ def collect_photoblog_tasks(photos: list[dict], output_dir: Path) -> list[tuple]
     output_dir.mkdir(parents=True, exist_ok=True)
     tasks = []
     for photo in photos:
-        slug = slugify(photo["source"].stem)
+        slug = photo_slug(photo)
         photo["slug"] = slug
         for size in PHOTOBLOG_SIZES:
             for ext, fmt in IMAGE_FORMATS.items():
@@ -286,11 +303,12 @@ def collect_photoblog_tasks(photos: list[dict], output_dir: Path) -> list[tuple]
 
 
 def collect_gallery_tasks(photos: list[dict], output_dir: Path) -> list[tuple]:
-    """Return image tasks for gallery photos."""
+    """Return image tasks for gallery photos. Sets photo['slug'] as a side effect."""
     output_dir.mkdir(parents=True, exist_ok=True)
     tasks = []
     for photo in photos:
-        slug = slugify(photo["source"].stem)
+        slug = photo_slug(photo)
+        photo["slug"] = slug
         for size in GALLERY_SIZES:
             for ext, fmt in IMAGE_FORMATS.items():
                 out_path = output_dir / f"{slug}-{size}.{ext}"
@@ -337,7 +355,7 @@ def build_gallery_photo_json(photos: list[dict], gallery_name: str) -> str:
     """Build JSON manifest for gallery lightbox."""
     items = []
     for photo in photos:
-        slug = slugify(photo["source"].stem)
+        slug = photo.get("slug") or photo_slug(photo)
         items.append({
             "base": f"/gallery/{gallery_name}/photos/{slug}",
             "sizes": GALLERY_SIZES,
@@ -376,8 +394,10 @@ def build_site(project_root: Path):
         if cover_path.stem.lower() == "_cover":
             cover_photos = [{"source": cover_path, "exif": {}}]
             all_tasks.extend(collect_gallery_tasks(cover_photos, gallery_out))
-
-        gallery["cover_stem"] = slugify(cover_path.stem)
+            gallery["cover_stem"] = cover_photos[0]["slug"]
+        else:
+            cover_photo = next(p for p in gallery["photos"] if p["source"] == cover_path)
+            gallery["cover_stem"] = cover_photo["slug"]
 
     reporter = Reporter(total=len(all_tasks))
     run_image_tasks(all_tasks, reporter)
@@ -417,7 +437,7 @@ def build_site(project_root: Path):
         photo_data = []
         for p in gallery["photos"]:
             photo_data.append({
-                "stem": slugify(p["source"].stem),
+                "stem": p["slug"],
                 "alt": make_alt_text(p["source"].name),
                 "exif": p.get("exif", {}),
             })
