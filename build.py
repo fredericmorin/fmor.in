@@ -12,6 +12,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 import exifread
+import yaml
 from PIL import Image
 
 ACCEPTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tiff"}
@@ -116,9 +117,9 @@ def extract_exif(photo_path: Path) -> dict:
 
 
 def load_exif_override(photo_path: Path) -> dict:
-    """Load per-photo EXIF overrides from a sidecar JSON file.
+    """Load per-photo EXIF overrides from a sidecar YAML file.
 
-    For a photo at ``some/dir/photo.jpg``, reads ``some/dir/photo.json`` if it
+    For a photo at ``some/dir/photo.jpg``, reads ``some/dir/photo.yaml`` if it
     exists.  The sidecar may contain any subset of EXIF fields to override or
     supplement (e.g. ``camera``, ``date``, ``title``).  Unknown keys are passed
     through so templates can display extra metadata such as ``title`` or
@@ -126,12 +127,12 @@ def load_exif_override(photo_path: Path) -> dict:
 
     Returns an empty dict if no sidecar is found or it cannot be parsed.
     """
-    sidecar = photo_path.with_suffix(".json")
+    sidecar = photo_path.with_suffix(".yaml")
     if not sidecar.exists():
         return {}
     try:
         with open(sidecar) as f:
-            data = json.load(f)
+            data = yaml.safe_load(f)
         if isinstance(data, dict):
             return {str(k): str(v) for k, v in data.items()}
     except Exception as exc:
