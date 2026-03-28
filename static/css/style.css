@@ -396,8 +396,20 @@ main {
         height: 40px;
         flex-wrap: nowrap;
         padding: 0 16px;
-        background: rgba(17, 17, 17, 0.85);
+        background: transparent;
         border-bottom-color: transparent;
+    }
+    .site-name {
+        color: #666;
+    }
+    .site-nav {
+        display: none;
+    }
+    .photoblog-gallery-link {
+        top: 12px;
+        left: auto;
+        right: 16px;
+        z-index: 110;
     }
     main {
         padding-top: 0;
