@@ -406,9 +406,9 @@ main {
         display: none;
     }
     .photoblog-gallery-link {
-        top: 12px;
-        left: auto;
-        right: 16px;
+        top: 28px;
+        left: 16px;
+        right: auto;
         z-index: 110;
     }
     main {
