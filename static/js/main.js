@@ -287,6 +287,15 @@
         }
     }
 
+    // --- Encourage Safari to collapse its UI on landscape rotation ---
+
+    window.addEventListener("orientationchange", function () {
+        setTimeout(function () {
+            window.scrollTo(0, 1);
+            setTimeout(function () { window.scrollTo(0, 0); }, 50);
+        }, 300);
+    });
+
     // --- Init ---
 
     document.addEventListener("DOMContentLoaded", function () {

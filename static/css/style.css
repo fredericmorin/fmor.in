@@ -404,6 +404,7 @@ main {
     }
     .slideshow {
         height: 100vh;
+        height: 100dvh;
     }
     .exif-bar {
         display: none;
