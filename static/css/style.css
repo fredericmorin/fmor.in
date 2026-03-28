@@ -390,6 +390,26 @@ main {
     }
 }
 
+/* Mobile landscape: maximize photo space */
+@media (orientation: landscape) and (max-height: 500px) {
+    .site-header {
+        height: 40px;
+        flex-wrap: nowrap;
+        padding: 0 16px;
+        background: rgba(17, 17, 17, 0.85);
+        border-bottom-color: transparent;
+    }
+    main {
+        padding-top: 0;
+    }
+    .slideshow {
+        height: 100vh;
+    }
+    .exif-bar {
+        display: none;
+    }
+}
+
 /* === Reduced motion === */
 @media (prefers-reduced-motion: reduce) {
     .nav-zone {
