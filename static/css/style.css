@@ -390,6 +390,39 @@ main {
     }
 }
 
+/* Mobile landscape: maximize photo space */
+@media (orientation: landscape) and (max-height: 500px) {
+    .site-header {
+        height: 40px;
+        flex-wrap: nowrap;
+        padding: 0 16px;
+        background: transparent;
+        border-bottom-color: transparent;
+    }
+    .site-name {
+        color: #666;
+    }
+    .site-nav {
+        display: none;
+    }
+    .photoblog-gallery-link {
+        top: 36px;
+        left: 16px;
+        right: auto;
+        z-index: 110;
+    }
+    main {
+        padding-top: 0;
+    }
+    .slideshow {
+        height: 100vh;
+        height: 100dvh;
+    }
+    .exif-bar {
+        display: none;
+    }
+}
+
 /* === Reduced motion === */
 @media (prefers-reduced-motion: reduce) {
     .nav-zone {
