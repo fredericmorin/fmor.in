@@ -79,7 +79,7 @@ def slugify(text: str) -> str:
 def photo_slug(photo: dict) -> str:
     """Return slug for a photo: slugified ISO8601 EXIF capture date if available, else filename slug.
 
-    EXIF date format: 'YYYY:MM:DD HH:MM:SS' → slug: 'yyyy-mm-ddthh-mm-ss'
+    EXIF date format: 'YYYY:MM:DD HH:MM:SS' → slug: 'yyyymmdd-hhmmss'
     """
     from datetime import datetime
 
@@ -87,7 +87,7 @@ def photo_slug(photo: dict) -> str:
     if exif_date:
         try:
             dt = datetime.strptime(exif_date, "%Y:%m:%d %H:%M:%S")
-            return slugify(dt.strftime("%Y-%m-%dT%H:%M:%S"))
+            return slugify(dt.strftime("%Y%m%d-%H%M%S"))
         except ValueError:
             pass
     return slugify(photo["source"].stem)

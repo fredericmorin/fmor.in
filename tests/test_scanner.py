@@ -202,6 +202,7 @@ def test_collect_photoblog_tasks_uses_exif_date_slug(tmp_path):
     tasks = collect_photoblog_tasks(photos, out)
 
     slugs = {task[1].stem for task in tasks}
+    # All output files should be named with the EXIF date slug + size
     assert all(stem.startswith("20231201-140000-") for stem in slugs)
     assert photos[0]["slug"] == "20231201-140000"
 
