@@ -71,6 +71,7 @@
 
     var slideshowIndex = 0;
     var slideshowBasePath = "";
+    var gridVisible = false;
 
     function initSlideshow() {
         if (!window.PHOTOS || window.PHOTOS.length === 0) return;
@@ -78,12 +79,6 @@
         slideshowBasePath = location.pathname;
 
         var hash = location.hash.replace("#", "");
-        if (hash) {
-            var idx = window.PHOTOS.findIndex(function (p) { return p.slug === hash; });
-            if (idx !== -1) slideshowIndex = idx;
-        }
-
-        showSlide(slideshowIndex);
 
         // Populate inline grid
         var gridEl = document.getElementById("photoblog-grid-thumbnails");
@@ -97,10 +92,22 @@
             }).join("");
         }
 
+        if (hash === "gallery" || !hash) {
+            showPhotoblogGrid();
+        } else {
+            var idx = window.PHOTOS.findIndex(function (p) { return p.slug === hash; });
+            if (idx !== -1) slideshowIndex = idx;
+            showSlide(slideshowIndex);
+        }
+
         window.addEventListener("popstate", function () {
             var h = location.hash.replace("#", "");
-            var idx = window.PHOTOS.findIndex(function (p) { return p.slug === h; });
-            if (idx !== -1) showSlide(idx);
+            if (h === "gallery") {
+                showPhotoblogGrid();
+            } else {
+                var idx = window.PHOTOS.findIndex(function (p) { return p.slug === h; });
+                if (idx !== -1) showSlide(idx);
+            }
         });
     }
 
@@ -122,9 +129,11 @@
 
         history.replaceState(null, "", slideshowBasePath + "#" + photo.slug);
 
-        // Preload adjacent
-        if (index > 0) preloadImage(photos[index - 1]);
-        if (index < photos.length - 1) preloadImage(photos[index + 1]);
+        // Preload adjacent only when slideshow is visible
+        if (!gridVisible) {
+            if (index > 0) preloadImage(photos[index - 1]);
+            if (index < photos.length - 1) preloadImage(photos[index + 1]);
+        }
     }
 
     window.navigatePhoto = function (delta) {
@@ -140,7 +149,12 @@
         var gridView = document.getElementById("photoblog-grid-view");
         if (slideshow) slideshow.style.display = "none";
         if (gridView) gridView.style.display = "";
-        history.replaceState(null, "", slideshowBasePath + "gallery/");
+        gridVisible = true;
+        history.replaceState(null, "", slideshowBasePath + "#gallery");
+        var thumbs = document.querySelectorAll("#photoblog-grid-thumbnails .thumbnail");
+        if (thumbs[slideshowIndex]) {
+            thumbs[slideshowIndex].scrollIntoView({ block: "center", behavior: "instant" });
+        }
     };
 
     window.hidePhotoblogGrid = function (e) {
@@ -149,6 +163,7 @@
         var gridView = document.getElementById("photoblog-grid-view");
         if (slideshow) slideshow.style.display = "";
         if (gridView) gridView.style.display = "none";
+        gridVisible = false;
         var photo = window.PHOTOS && window.PHOTOS[slideshowIndex];
         history.replaceState(null, "", slideshowBasePath + (photo ? "#" + photo.slug : ""));
     };
@@ -260,9 +275,10 @@
             return;
         }
 
-        if (window.PHOTOS) {
+        if (window.PHOTOS && !gridVisible) {
             if (e.key === "ArrowLeft") navigatePhoto(-1);
             if (e.key === "ArrowRight") navigatePhoto(1);
+            if (e.key === "Escape") showPhotoblogGrid();
         }
     });
 
