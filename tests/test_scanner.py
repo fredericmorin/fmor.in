@@ -189,6 +189,36 @@ def test_photo_slug_falls_back_on_missing_exif(tmp_path):
     assert photo_slug(photo) == "sunset"
 
 
+def test_photo_slug_appends_title(tmp_path):
+    """photo_slug() appends slugified sidecar title when present."""
+    from build import photo_slug
+    photo = {
+        "source": tmp_path / "IMG_1234.jpg",
+        "exif": {"date": "2024:06:15 09:30:00", "title": "Golden Hour"},
+    }
+    assert photo_slug(photo) == "20240615-093000-golden-hour"
+
+
+def test_photo_slug_title_only_no_date(tmp_path):
+    """photo_slug() appends title to filename slug when no date."""
+    from build import photo_slug
+    photo = {
+        "source": tmp_path / "IMG_1234.jpg",
+        "exif": {"title": "My Shot"},
+    }
+    assert photo_slug(photo) == "img-1234-my-shot"
+
+
+def test_photo_slug_ignores_blank_title(tmp_path):
+    """photo_slug() does not append title when it is empty/whitespace."""
+    from build import photo_slug
+    photo = {
+        "source": tmp_path / "IMG_1234.jpg",
+        "exif": {"date": "2024:06:15 09:30:00", "title": "  "},
+    }
+    assert photo_slug(photo) == "20240615-093000"
+
+
 def test_collect_photoblog_tasks_uses_exif_date_slug(tmp_path):
     """collect_photoblog_tasks() uses EXIF date for output filename slug."""
     from build import collect_photoblog_tasks

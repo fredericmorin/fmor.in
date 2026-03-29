@@ -77,20 +77,32 @@ def slugify(text: str) -> str:
 
 
 def photo_slug(photo: dict) -> str:
-    """Return slug for a photo: slugified ISO8601 EXIF capture date if available, else filename slug.
+    """Return slug for a photo: yyyymmdd-hhmmss from EXIF date (or filename stem as fallback),
+    with the sidecar title appended when present.
 
-    EXIF date format: 'YYYY:MM:DD HH:MM:SS' → slug: 'yyyymmdd-hhmmss'
+    Examples:
+      date + title  → '20240615-093000-golden-hour'
+      date only     → '20240615-093000'
+      title only    → 'img-1234-golden-hour'
+      neither       → 'img-1234'
     """
     from datetime import datetime
 
-    exif_date = photo.get("exif", {}).get("date", "")
+    exif = photo.get("exif", {})
+    exif_date = exif.get("date", "")
     if exif_date:
         try:
             dt = datetime.strptime(exif_date, "%Y:%m:%d %H:%M:%S")
-            return slugify(dt.strftime("%Y%m%d-%H%M%S"))
+            base = slugify(dt.strftime("%Y%m%d-%H%M%S"))
         except ValueError:
-            pass
-    return slugify(photo["source"].stem)
+            base = slugify(photo["source"].stem)
+    else:
+        base = slugify(photo["source"].stem)
+
+    title = exif.get("title", "").strip()
+    if title:
+        return f"{base}-{slugify(title)}"
+    return base
 
 
 def extract_exif(photo_path: Path) -> dict:
