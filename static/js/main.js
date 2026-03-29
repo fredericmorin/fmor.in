@@ -1,4 +1,4 @@
-/* fmor.in — slideshow & lightbox navigation */
+/* fmor.in — slideshow navigation */
 (function () {
     "use strict";
 
@@ -173,135 +173,15 @@
         showSlide(index);
     };
 
-    // --- Lightbox (Gallery) ---
-
-    var lightboxIndex = 0;
-    var lightboxOpen = false;
-    var previousFocus = null;
-
-    window.openLightbox = function (index) {
-        if (!window.GALLERY_PHOTOS) return;
-        previousFocus = document.activeElement;
-        lightboxIndex = index;
-        lightboxOpen = true;
-        document.body.style.overflow = "hidden";
-
-        var lb = document.getElementById("lightbox");
-        if (lb) lb.classList.add("open");
-
-        showLightboxPhoto(index);
-
-        // Focus the close button for accessibility
-        var closeBtn = document.querySelector(".lightbox-close");
-        if (closeBtn) closeBtn.focus();
-    };
-
-    window.closeLightbox = function () {
-        lightboxOpen = false;
-        document.body.style.overflow = "";
-
-        var lb = document.getElementById("lightbox");
-        if (lb) lb.classList.remove("open");
-
-        history.replaceState(null, "", location.pathname);
-
-        if (previousFocus) previousFocus.focus();
-    };
-
-    window.navigateLightbox = function (delta) {
-        var photos = window.GALLERY_PHOTOS;
-        if (!photos) return;
-        var next = lightboxIndex + delta;
-        if (next >= 0 && next < photos.length) showLightboxPhoto(next);
-    };
-
-    function showLightboxPhoto(index) {
-        var photos = window.GALLERY_PHOTOS;
-        if (!photos || index < 0 || index >= photos.length) return;
-
-        lightboxIndex = index;
-        var photo = photos[index];
-
-        var picture = document.getElementById("lightbox-picture");
-        if (picture) picture.innerHTML = buildPicture(photo, "100vw");
-
-        var counter = document.getElementById("lightbox-counter");
-        if (counter) counter.textContent = (index + 1) + " / " + photos.length;
-
-        var exifEl = document.getElementById("lightbox-exif");
-        if (exifEl) exifEl.innerHTML = buildExif(photo.exif, photo.date);
-
-        history.replaceState(null, "", "#" + (index + 1));
-
-        // Preload adjacent
-        if (index > 0) preloadImage(photos[index - 1]);
-        if (index < photos.length - 1) preloadImage(photos[index + 1]);
-    }
-
-    // --- Focus trap for lightbox ---
-
-    function trapFocus(e) {
-        if (!lightboxOpen) return;
-        if (e.key !== "Tab") return;
-
-        var lb = document.getElementById("lightbox");
-        var focusable = lb.querySelectorAll('button, [role="button"][tabindex="0"]');
-        if (focusable.length === 0) return;
-
-        var first = focusable[0];
-        var last = focusable[focusable.length - 1];
-
-        if (e.shiftKey) {
-            if (document.activeElement === first) {
-                e.preventDefault();
-                last.focus();
-            }
-        } else {
-            if (document.activeElement === last) {
-                e.preventDefault();
-                first.focus();
-            }
-        }
-    }
-
     // --- Keyboard navigation ---
 
     document.addEventListener("keydown", function (e) {
-        if (lightboxOpen) {
-            trapFocus(e);
-            if (e.key === "Escape") { closeLightbox(); return; }
-            if (e.key === "ArrowLeft") { navigateLightbox(-1); return; }
-            if (e.key === "ArrowRight") { navigateLightbox(1); return; }
-            return;
-        }
-
         if (window.PHOTOS && !gridVisible) {
             if (e.key === "ArrowLeft") navigatePhoto(-1);
             if (e.key === "ArrowRight") navigatePhoto(1);
             if (e.key === "Escape") showPhotoblogGrid();
         }
     });
-
-
-    // --- Lightbox backdrop click to close ---
-
-    document.addEventListener("click", function (e) {
-        if (!lightboxOpen) return;
-        var lb = document.getElementById("lightbox");
-        var photoArea = document.querySelector(".lightbox-photo");
-        // Close if click is on the lightbox backdrop, not on a child interactive element
-        if (e.target === lb || e.target === photoArea) closeLightbox();
-    });
-
-    // --- Lightbox hash deep-linking ---
-
-    function checkGalleryHash() {
-        if (!window.GALLERY_PHOTOS) return;
-        var hash = parseInt(location.hash.replace("#", ""), 10);
-        if (hash > 0 && hash <= window.GALLERY_PHOTOS.length) {
-            openLightbox(hash - 1);
-        }
-    }
 
     // --- Encourage Safari to collapse its UI on landscape rotation ---
 
@@ -316,6 +196,5 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         if (window.PHOTOS) initSlideshow();
-        if (window.GALLERY_PHOTOS) checkGalleryHash();
     });
 })();
