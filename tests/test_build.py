@@ -96,31 +96,6 @@ def test_build_with_empty_content(tmp_path):
     assert (output / "gallery" / "index.html").exists()
 
 
-def test_photoblog_gallery_page_is_generated(tmp_path):
-    """build_site() creates photoblog/gallery/index.html."""
-    import shutil
-    from build import build_site
-
-    content = tmp_path / "content"
-    pb = content / "photoblog"
-    pb.mkdir(parents=True)
-    make_test_image(pb / "photo1.jpg")
-    make_test_image(pb / "photo2.jpg")
-
-    project_root = Path(__file__).parent.parent
-    shutil.copytree(project_root / "templates", tmp_path / "templates")
-    shutil.copytree(project_root / "static", tmp_path / "static")
-
-    build_site(tmp_path)
-
-    output = tmp_path / "output"
-    gallery_page = output / "photoblog" / "gallery" / "index.html"
-    assert gallery_page.exists()
-
-    content_html = gallery_page.read_text()
-    assert "thumbnail-grid" in content_html
-    assert 'href="/photoblog/#photo1"' in content_html
-    assert "photo1" in content_html or "photo2" in content_html
 
 
 def test_gallery_page_uses_slideshow_pattern(tmp_path):

@@ -297,68 +297,6 @@ main {
     outline-offset: 2px;
 }
 
-/* === Lightbox === */
-.lightbox {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.95);
-    z-index: 200;
-    display: none;
-    flex-direction: column;
-}
-
-.lightbox.open {
-    display: flex;
-}
-
-.lightbox-close {
-    position: absolute;
-    top: 12px;
-    right: 20px;
-    z-index: 210;
-    color: #666;
-    font-size: 20px;
-    cursor: pointer;
-    background: none;
-    border: none;
-    font-family: inherit;
-}
-
-.lightbox-close:hover {
-    color: #aaa;
-}
-
-.lightbox-close:focus-visible {
-    outline: 1px solid #fff;
-    outline-offset: 4px;
-}
-
-.lightbox-photo {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
-.lightbox-photo picture {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-}
-
-.lightbox-photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.lightbox .exif-bar {
-    background: rgba(17, 17, 17, 0.9);
-}
-
 /* === Responsive === */
 @media (min-width: 768px) {
     .gallery-grid {
