@@ -96,16 +96,18 @@ def test_build_with_empty_content(tmp_path):
     assert (output / "gallery" / "index.html").exists()
 
 
-def test_photoblog_gallery_page_is_generated(tmp_path):
-    """build_site() creates photoblog/gallery/index.html."""
+
+
+def test_gallery_page_uses_slideshow_pattern(tmp_path):
+    """Gallery page HTML should use the photoblog slideshow UX, not a lightbox."""
     import shutil
     from build import build_site
 
     content = tmp_path / "content"
-    pb = content / "photoblog"
-    pb.mkdir(parents=True)
-    make_test_image(pb / "photo1.jpg")
-    make_test_image(pb / "photo2.jpg")
+    gal = content / "galleries" / "mygal"
+    gal.mkdir(parents=True)
+    make_test_image(gal / "shot1.jpg")
+    make_test_image(gal / "shot2.jpg")
 
     project_root = Path(__file__).parent.parent
     shutil.copytree(project_root / "templates", tmp_path / "templates")
@@ -113,11 +115,25 @@ def test_photoblog_gallery_page_is_generated(tmp_path):
 
     build_site(tmp_path)
 
-    output = tmp_path / "output"
-    gallery_page = output / "photoblog" / "gallery" / "index.html"
-    assert gallery_page.exists()
+    html = (tmp_path / "output" / "gallery" / "mygal" / "index.html").read_text()
 
-    content_html = gallery_page.read_text()
-    assert "thumbnail-grid" in content_html
-    assert 'href="/photoblog/#photo1"' in content_html
-    assert "photo1" in content_html or "photo2" in content_html
+    # Uses slideshow manifest key, not lightbox key
+    assert "window.PHOTOS" in html
+    assert "window.GALLERY_PHOTOS" not in html
+
+    # Has slideshow and grid containers
+    assert 'id="slideshow"' in html
+    assert 'id="photoblog-grid-view"' in html
+    assert 'id="photoblog-grid-thumbnails"' in html
+
+    # No lightbox
+    assert 'id="lightbox"' not in html
+
+    # JSON manifest includes slug field (required for hash navigation)
+    import json
+    script_start = html.index("window.PHOTOS = ") + len("window.PHOTOS = ")
+    script_end = html.index(";", script_start)
+    photos_data = json.loads(html[script_start:script_end])
+    assert len(photos_data) == 2
+    assert all("slug" in p for p in photos_data)
+    assert all(p["base"].startswith("/gallery/mygal/photos/") for p in photos_data)
