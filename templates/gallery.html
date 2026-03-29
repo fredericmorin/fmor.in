@@ -1,48 +1,61 @@
-{% extends "base.html" %}
-
-{% block title %}{{ gallery_name | replace('_', ' ') | replace('-', ' ') | title }} — fmor.in{% endblock %}
-{% block og_title %}{{ gallery_name | replace('_', ' ') | replace('-', ' ') | title }} — fmor.in{% endblock %}
-{% block og_image %}
-{% if photos %}
-<meta property="og:image" content="/gallery/{{ gallery_name }}/photos/{{ photos[0].slug }}-1920.jpg">
-{% endif %}
-{% endblock %}
-
-{% block head_extra %}
+{% extends "base.html" %} {% block title %}{{ gallery_name | replace('_', ' ') | replace('-', ' ') |
+title }} — fmor.in{% endblock %} {% block og_title %}{{ gallery_name | replace('_', ' ') |
+replace('-', ' ') | title }} — fmor.in{% endblock %} {% block og_image %} {% if photos %}
+<meta
+  property="og:image"
+  content="/gallery/{{ gallery_name }}/photos/{{ photos[0].slug }}-1920.jpg"
+/>
+{% endif %} {% endblock %} {% block head_extra %}
 <script>
-    window.PHOTOS = {{ photos_json | safe }};
+  window.PHOTOS = {{ photos_json | safe }};
 </script>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 <div class="slideshow" id="slideshow" data-section="gallery">
-    <div class="slideshow-photo">
-        <a href="#gallery" class="gallery-back photoblog-gallery-link" aria-label="View all photos as gallery" onclick="showPhotoblogGrid(event)">Grid</a>
-        <div class="nav-zone nav-zone--prev" onclick="navigatePhoto(-1)" role="button" aria-label="Previous photo" tabindex="0">
-            <span class="arrow">‹</span>
-        </div>
-
-        <picture id="photo-picture">
-            {# Populated by JS from PHOTOS manifest #}
-        </picture>
-
-        <div class="nav-zone nav-zone--next" onclick="navigatePhoto(1)" role="button" aria-label="Next photo" tabindex="0">
-            <span class="arrow">›</span>
-        </div>
-
-        <div class="photo-counter" id="photo-counter"></div>
+  <div class="slideshow-photo">
+    <a
+      href="#gallery"
+      class="gallery-back photoblog-gallery-link"
+      aria-label="View all photos as gallery"
+      onclick="showPhotoblogGrid(event)"
+      >Grid</a
+    >
+    <div
+      class="nav-zone nav-zone--prev"
+      onclick="navigatePhoto(-1)"
+      role="button"
+      aria-label="Previous photo"
+      tabindex="0"
+    >
+      <span class="arrow">‹</span>
     </div>
 
-    <div id="exif-container"></div>
+    <picture id="photo-picture"> {# Populated by JS from PHOTOS manifest #} </picture>
+
+    <div
+      class="nav-zone nav-zone--next"
+      onclick="navigatePhoto(1)"
+      role="button"
+      aria-label="Next photo"
+      tabindex="0"
+    >
+      <span class="arrow">›</span>
+    </div>
+
+    <div class="photo-counter" id="photo-counter"></div>
+  </div>
+
+  <div id="exif-container"></div>
 </div>
 
-<div id="photoblog-grid-view" style="display:none">
-    <div class="gallery-header">
-        <a href="/gallery/" class="gallery-back" aria-label="Back to galleries">← Galleries</a>
-        <span class="gallery-sep">·</span>
-        <h1 class="gallery-title">{{ gallery_name | replace('_', ' ') | replace('-', ' ') | title }}</h1>
-    </div>
+<div id="photoblog-grid-view" style="display: none">
+  <div class="gallery-header">
+    <a href="/gallery/" class="gallery-back" aria-label="Back to galleries">← Galleries</a>
+    <span class="gallery-sep">·</span>
+    <h1 class="gallery-title">
+      {{ gallery_name | replace('_', ' ') | replace('-', ' ') | title }}
+    </h1>
+  </div>
 
-    <div class="thumbnail-grid" id="photoblog-grid-thumbnails"></div>
+  <div class="thumbnail-grid" id="photoblog-grid-thumbnails"></div>
 </div>
 {% endblock %}

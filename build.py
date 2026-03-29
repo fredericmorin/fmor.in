@@ -221,10 +221,12 @@ def scan_photoblog(photoblog_dir: Path) -> list[dict]:
         if f.is_file() and f.suffix.lower() in ACCEPTED_EXTENSIONS:
             exif = extract_exif(f)
             exif.update(load_exif_override(f))
-            photos.append({
-                "source": f,
-                "exif": exif,
-            })
+            photos.append(
+                {
+                    "source": f,
+                    "exif": exif,
+                }
+            )
 
     photos.sort(key=get_sort_key)
     return photos
@@ -262,10 +264,12 @@ def scan_galleries(galleries_dir: Path) -> list[dict]:
 
             exif = extract_exif(f)
             exif.update(load_exif_override(f))
-            photos.append({
-                "source": f,
-                "exif": exif,
-            })
+            photos.append(
+                {
+                    "source": f,
+                    "exif": exif,
+                }
+            )
 
         if not photos:
             print(f"Warning: gallery '{folder.name}' is empty, skipping", file=sys.stderr)
@@ -276,13 +280,15 @@ def scan_galleries(galleries_dir: Path) -> list[dict]:
         if cover is None:
             cover = photos[0]["source"]
 
-        galleries.append({
-            "name": folder.name,
-            "path": folder,
-            "cover": cover,
-            "photos": photos,
-            "count": len(photos),
-        })
+        galleries.append(
+            {
+                "name": folder.name,
+                "path": folder,
+                "cover": cover,
+                "photos": photos,
+                "count": len(photos),
+            }
+        )
 
     return galleries
 
@@ -368,14 +374,16 @@ def build_photo_json(photos: list[dict], base_path: str, sizes: list[int]) -> st
     items = []
     for photo in photos:
         slug = photo.get("slug") or slugify(photo["source"].stem)
-        items.append({
-            "slug": slug,
-            "base": f"{base_path}/{slug}",
-            "sizes": sizes,
-            "exif": photo.get("exif", {}),
-            "date": photo.get("exif", {}).get("date", ""),
-            "alt": make_alt_text(photo["source"].name),
-        })
+        items.append(
+            {
+                "slug": slug,
+                "base": f"{base_path}/{slug}",
+                "sizes": sizes,
+                "exif": photo.get("exif", {}),
+                "date": photo.get("exif", {}).get("date", ""),
+                "alt": make_alt_text(photo["source"].name),
+            }
+        )
     return json.dumps(items)
 
 
@@ -449,13 +457,17 @@ def build_site(project_root: Path):
 
         photo_data = []
         for p in gallery["photos"]:
-            photo_data.append({
-                "slug": p["slug"],
-                "alt": make_alt_text(p["source"].name),
-                "exif": p.get("exif", {}),
-            })
+            photo_data.append(
+                {
+                    "slug": p["slug"],
+                    "alt": make_alt_text(p["source"].name),
+                    "exif": p.get("exif", {}),
+                }
+            )
 
-        photos_json = build_photo_json(gallery["photos"], f"/gallery/{gallery['name']}/photos", GALLERY_SIZES)
+        photos_json = build_photo_json(
+            gallery["photos"], f"/gallery/{gallery['name']}/photos", GALLERY_SIZES
+        )
         (gal_out / "index.html").write_text(
             g_tmpl.render(
                 section="gallery",

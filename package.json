@@ -1,0 +1,28 @@
+{
+  "name": "fmor.in",
+  "version": "1.0.0",
+  "description": "Static photography site with a full-screen photoblog slideshow and a grid-based gallery. No backend — a Python build script processes source photos and emits a folder of HTML/CSS/JS.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fredericmorin/fmor.in.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/fredericmorin/fmor.in/issues"
+  },
+  "homepage": "https://github.com/fredericmorin/fmor.in#readme",
+  "devDependencies": {
+    "prettier": "^3.8.1"
+  }
+}

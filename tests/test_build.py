@@ -17,11 +17,13 @@ def test_full_build_produces_output(tmp_path):
 
     # Setup templates and static (copy from project)
     import shutil
+
     project_root = Path(__file__).parent.parent
     shutil.copytree(project_root / "templates", tmp_path / "templates")
     shutil.copytree(project_root / "static", tmp_path / "static")
 
     from build import build_site
+
     build_site(tmp_path)
 
     output = tmp_path / "output"
@@ -83,19 +85,19 @@ def test_build_with_empty_content(tmp_path):
     (content / "galleries").mkdir(parents=True)
 
     import shutil
+
     project_root = Path(__file__).parent.parent
     shutil.copytree(project_root / "templates", tmp_path / "templates")
     shutil.copytree(project_root / "static", tmp_path / "static")
 
     from build import build_site
+
     build_site(tmp_path)
 
     output = tmp_path / "output"
     assert (output / "index.html").exists()
     assert (output / "photoblog" / "index.html").exists()
     assert (output / "gallery" / "index.html").exists()
-
-
 
 
 def test_gallery_page_uses_slideshow_pattern(tmp_path):
@@ -131,6 +133,7 @@ def test_gallery_page_uses_slideshow_pattern(tmp_path):
 
     # JSON manifest includes slug field (required for hash navigation)
     import json
+
     script_start = html.index("window.PHOTOS = ") + len("window.PHOTOS = ")
     script_end = html.index(";", script_start)
     photos_data = json.loads(html[script_start:script_end])

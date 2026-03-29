@@ -1,12 +1,11 @@
 # tests/test_images.py
-import io
-import sys
 from pathlib import Path
 from tests.helpers import make_test_image
 
 
 def test_collect_photoblog_tasks_returns_tuples(tmp_path):
     from build import collect_photoblog_tasks, scan_photoblog, PHOTOBLOG_SIZES, IMAGE_FORMATS
+
     src = tmp_path / "src"
     src.mkdir()
     make_test_image(src / "photo.jpg")
@@ -24,6 +23,7 @@ def test_collect_photoblog_tasks_returns_tuples(tmp_path):
 
 def test_collect_gallery_tasks_returns_tuples(tmp_path):
     from build import collect_gallery_tasks, GALLERY_SIZES, IMAGE_FORMATS
+
     src = tmp_path / "src"
     src.mkdir()
     make_test_image(src / "photo.jpg")
@@ -39,6 +39,7 @@ def test_collect_gallery_tasks_returns_tuples(tmp_path):
 
 def test_collect_photoblog_tasks_creates_all_sizes(tmp_path):
     from build import collect_photoblog_tasks, scan_photoblog, resize_and_save
+
     src = tmp_path / "src"
     src.mkdir()
     make_test_image(src / "photo.jpg", width=4000, height=3000)
@@ -60,6 +61,7 @@ def test_collect_photoblog_tasks_creates_all_sizes(tmp_path):
 
 def test_collect_gallery_tasks_creates_thumbnail_size(tmp_path):
     from build import collect_gallery_tasks, resize_and_save
+
     src = tmp_path / "src"
     src.mkdir()
     make_test_image(src / "photo.jpg", width=4000, height=3000)
@@ -79,6 +81,7 @@ def test_collect_gallery_tasks_creates_thumbnail_size(tmp_path):
 def test_incremental_build_skips_existing(tmp_path):
     from build import collect_photoblog_tasks, scan_photoblog, resize_and_save
     import time
+
     src = tmp_path / "src"
     src.mkdir()
     make_test_image(src / "photo.jpg")
@@ -99,6 +102,7 @@ def test_incremental_build_skips_existing(tmp_path):
 def test_generated_image_dimensions(tmp_path):
     from build import collect_photoblog_tasks, scan_photoblog, resize_and_save
     from PIL import Image
+
     src = tmp_path / "src"
     src.mkdir()
     make_test_image(src / "photo.jpg", width=4000, height=3000)
@@ -114,6 +118,7 @@ def test_generated_image_dimensions(tmp_path):
 
 def test_resize_and_save_returns_output_path(tmp_path):
     from build import resize_and_save
+
     src = tmp_path / "src.jpg"
     make_test_image(src, width=200, height=200)
     out = tmp_path / "out-100.jpg"
@@ -123,6 +128,7 @@ def test_resize_and_save_returns_output_path(tmp_path):
 
 def test_reporter_non_tty_prints_lines(tmp_path, capsys):
     from build import Reporter
+
     r = Reporter(total=3, is_tty=False)
     r.report(tmp_path / "a.jpg")
     r.report(tmp_path / "b.avif")
@@ -135,6 +141,7 @@ def test_reporter_non_tty_prints_lines(tmp_path, capsys):
 
 def test_reporter_non_tty_finish_prints_summary(capsys):
     from build import Reporter
+
     r = Reporter(total=5, is_tty=False)
     r.finish("Build complete: 5 files")
     captured = capsys.readouterr()
@@ -143,6 +150,7 @@ def test_reporter_non_tty_finish_prints_summary(capsys):
 
 def test_reporter_tty_overwrites_line(tmp_path, capsys, monkeypatch):
     from build import Reporter
+
     r = Reporter(total=3, is_tty=True)
     r.report(tmp_path / "a.jpg")
     r.report(tmp_path / "b.avif")
@@ -150,12 +158,13 @@ def test_reporter_tty_overwrites_line(tmp_path, capsys, monkeypatch):
     # Should use \r, not \n between updates
     assert "\r" in captured.err
     # Should not have two newline-separated file lines
-    newline_lines = [l for l in captured.err.split("\n") if l.strip()]
+    newline_lines = [line for line in captured.err.split("\n") if line.strip()]
     assert len(newline_lines) <= 1
 
 
 def test_reporter_tty_finish_clears_line(capsys):
     from build import Reporter
+
     r = Reporter(total=2, is_tty=True)
     r.finish("Done")
     captured = capsys.readouterr()

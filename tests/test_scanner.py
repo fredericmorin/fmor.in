@@ -1,4 +1,3 @@
-from pathlib import Path
 import pytest
 from tests.helpers import make_test_image
 
@@ -11,6 +10,7 @@ def test_scan_photoblog_finds_accepted_formats(tmp_content):
     (pb / "readme.txt").write_text("ignore me")
 
     from build import scan_photoblog
+
     photos = scan_photoblog(pb)
     assert len(photos) == 3
     assert all(p["source"].suffix in (".jpg", ".jpeg", ".png") for p in photos)
@@ -23,6 +23,7 @@ def test_scan_photoblog_sorted_by_filename_without_exif(tmp_content):
     make_test_image(pb / "b-photo.jpg")
 
     from build import scan_photoblog
+
     photos = scan_photoblog(pb)
     # Without EXIF dates, falls back to filename sort
     stems = [p["source"].stem for p in photos]
@@ -32,6 +33,7 @@ def test_scan_photoblog_sorted_by_filename_without_exif(tmp_content):
 def test_scan_photoblog_empty_folder_returns_empty(tmp_content):
     pb = tmp_content / "photoblog"
     from build import scan_photoblog
+
     photos = scan_photoblog(pb)
     assert photos == []
 
@@ -41,6 +43,7 @@ def test_scan_galleries_finds_subfolders(tmp_content):
     make_test_image(tmp_content / "galleries" / "beta" / "img1.jpg")
 
     from build import scan_galleries
+
     galleries = scan_galleries(tmp_content / "galleries")
     assert len(galleries) == 2
     assert galleries[0]["name"] == "alpha"  # alphabetical
@@ -52,6 +55,7 @@ def test_scan_galleries_skips_empty_folders(tmp_content, capsys):
     # beta is empty
 
     from build import scan_galleries
+
     galleries = scan_galleries(tmp_content / "galleries")
     assert len(galleries) == 1
     assert galleries[0]["name"] == "alpha"
@@ -63,6 +67,7 @@ def test_scan_galleries_cover_override(tmp_content):
     make_test_image(tmp_content / "galleries" / "alpha" / "_cover.jpg")
 
     from build import scan_galleries
+
     galleries = scan_galleries(tmp_content / "galleries")
     assert galleries[0]["cover"].name == "_cover.jpg"
     # _cover should be excluded from photo list
@@ -74,6 +79,7 @@ def test_scan_galleries_stem_collision_fails(tmp_content):
     make_test_image(tmp_content / "galleries" / "alpha" / "sunset.png")
 
     from build import scan_galleries
+
     with pytest.raises(ValueError, match="stem collision"):
         scan_galleries(tmp_content / "galleries")
 
@@ -82,11 +88,13 @@ def test_scan_galleries_stem_collision_fails(tmp_content):
 # EXIF override tests
 # ---------------------------------------------------------------------------
 
+
 def test_load_exif_override_no_sidecar(tmp_path):
     photo = tmp_path / "photo.jpg"
     make_test_image(photo)
 
     from build import load_exif_override
+
     assert load_exif_override(photo) == {}
 
 
@@ -96,6 +104,7 @@ def test_load_exif_override_overrides_fields(tmp_path):
     (tmp_path / "photo.yaml").write_text("camera: Leica M6\nlens: Summicron 50mm\n")
 
     from build import load_exif_override
+
     override = load_exif_override(photo)
     assert override["camera"] == "Leica M6"
     assert override["lens"] == "Summicron 50mm"
@@ -107,6 +116,7 @@ def test_load_exif_override_extra_fields(tmp_path):
     (tmp_path / "photo.yaml").write_text("title: Golden hour\ncaption: Nice shot\n")
 
     from build import load_exif_override
+
     override = load_exif_override(photo)
     assert override["title"] == "Golden hour"
     assert override["caption"] == "Nice shot"
@@ -118,6 +128,7 @@ def test_load_exif_override_invalid_yaml_warns(tmp_path, capsys):
     (tmp_path / "photo.yaml").write_text("key: [unclosed")
 
     from build import load_exif_override
+
     result = load_exif_override(photo)
     assert result == {}
     assert "Warning" in capsys.readouterr().err
@@ -129,6 +140,7 @@ def test_scan_photoblog_applies_exif_override(tmp_content):
     (pb / "shot.yaml").write_text("camera: Film Camera\ntitle: My shot\n")
 
     from build import scan_photoblog
+
     photos = scan_photoblog(pb)
     assert len(photos) == 1
     assert photos[0]["exif"]["camera"] == "Film Camera"
@@ -142,6 +154,7 @@ def test_scan_galleries_applies_exif_override(tmp_content):
     (gal / "img1.yaml").write_text("camera: Override Cam\n")
 
     from build import scan_galleries
+
     galleries = scan_galleries(tmp_content / "galleries")
     assert galleries[0]["photos"][0]["exif"]["camera"] == "Override Cam"
 
@@ -153,6 +166,7 @@ def test_exif_override_merged_over_extracted(tmp_path):
     (tmp_path / "photo.yaml").write_text("camera: Manual Override\n")
 
     from build import extract_exif, load_exif_override
+
     exif = extract_exif(photo)
     exif.update(load_exif_override(photo))
     assert exif["camera"] == "Manual Override"
@@ -162,9 +176,11 @@ def test_exif_override_merged_over_extracted(tmp_path):
 # EXIF date slug tests
 # ---------------------------------------------------------------------------
 
+
 def test_photo_slug_uses_exif_date(tmp_path):
     """photo_slug() returns a slugified datetime when EXIF date is present."""
     from build import photo_slug
+
     photo = {
         "source": tmp_path / "IMG_1234.jpg",
         "exif": {"date": "2024:06:15 09:30:00"},
@@ -175,6 +191,7 @@ def test_photo_slug_uses_exif_date(tmp_path):
 def test_photo_slug_falls_back_to_filename(tmp_path):
     """photo_slug() falls back to slugified filename stem when no EXIF date."""
     from build import photo_slug
+
     photo = {
         "source": tmp_path / "My_Great Photo.jpg",
         "exif": {},
@@ -185,6 +202,7 @@ def test_photo_slug_falls_back_to_filename(tmp_path):
 def test_photo_slug_falls_back_on_missing_exif(tmp_path):
     """photo_slug() falls back to filename when exif key is absent."""
     from build import photo_slug
+
     photo = {"source": tmp_path / "sunset.jpg"}
     assert photo_slug(photo) == "sunset"
 
@@ -192,6 +210,7 @@ def test_photo_slug_falls_back_on_missing_exif(tmp_path):
 def test_photo_slug_appends_title(tmp_path):
     """photo_slug() appends slugified sidecar title when present."""
     from build import photo_slug
+
     photo = {
         "source": tmp_path / "IMG_1234.jpg",
         "exif": {"date": "2024:06:15 09:30:00", "title": "Golden Hour"},
@@ -202,6 +221,7 @@ def test_photo_slug_appends_title(tmp_path):
 def test_photo_slug_title_only_no_date(tmp_path):
     """photo_slug() appends title to filename slug when no date."""
     from build import photo_slug
+
     photo = {
         "source": tmp_path / "IMG_1234.jpg",
         "exif": {"title": "My Shot"},
@@ -212,6 +232,7 @@ def test_photo_slug_title_only_no_date(tmp_path):
 def test_photo_slug_ignores_blank_title(tmp_path):
     """photo_slug() does not append title when it is empty/whitespace."""
     from build import photo_slug
+
     photo = {
         "source": tmp_path / "IMG_1234.jpg",
         "exif": {"date": "2024:06:15 09:30:00", "title": "  "},
