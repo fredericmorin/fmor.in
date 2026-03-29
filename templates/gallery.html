@@ -15,12 +15,6 @@
 {% endblock %}
 
 {% block content %}
-<div class="gallery-header">
-    <a href="/gallery/" class="gallery-back" aria-label="Back to galleries">← Galleries</a>
-    <span class="gallery-sep">·</span>
-    <h1 class="gallery-title">{{ gallery_name | replace('_', ' ') | replace('-', ' ') | title }}</h1>
-</div>
-
 <div class="slideshow" id="slideshow" data-section="gallery">
     <div class="slideshow-photo">
         <a href="#gallery" class="gallery-back photoblog-gallery-link" aria-label="View all photos as gallery" onclick="showPhotoblogGrid(event)">Grid</a>
@@ -43,6 +37,12 @@
 </div>
 
 <div id="photoblog-grid-view" style="display:none">
+    <div class="gallery-header">
+        <a href="/gallery/" class="gallery-back" aria-label="Back to galleries">← Galleries</a>
+        <span class="gallery-sep">·</span>
+        <h1 class="gallery-title">{{ gallery_name | replace('_', ' ') | replace('-', ' ') | title }}</h1>
+    </div>
+
     <div class="thumbnail-grid" id="photoblog-grid-thumbnails"></div>
 </div>
 {% endblock %}
