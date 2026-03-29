@@ -4,7 +4,7 @@
 {% block og_title %}{{ gallery_name | replace('_', ' ') | replace('-', ' ') | title }} — fmor.in{% endblock %}
 {% block og_image %}
 {% if photos %}
-<meta property="og:image" content="/gallery/{{ gallery_name }}/photos/{{ photos[0].stem }}-1920.jpg">
+<meta property="og:image" content="/gallery/{{ gallery_name }}/photos/{{ photos[0].slug }}-1920.jpg">
 {% endif %}
 {% endblock %}
 
@@ -26,13 +26,13 @@
     <div class="thumbnail" data-index="{{ loop.index0 }}" onclick="openLightbox({{ loop.index0 }})" role="button" aria-label="View {{ photo.alt }}" tabindex="0">
         <picture>
             <source type="image/avif"
-                srcset="/gallery/{{ gallery_name }}/photos/{{ photo.stem }}-400.avif 400w, /gallery/{{ gallery_name }}/photos/{{ photo.stem }}-800.avif 800w"
+                srcset="/gallery/{{ gallery_name }}/photos/{{ photo.slug }}-400.avif 400w, /gallery/{{ gallery_name }}/photos/{{ photo.slug }}-800.avif 800w"
                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw">
             <source type="image/jpeg"
-                srcset="/gallery/{{ gallery_name }}/photos/{{ photo.stem }}-400.jpg 400w, /gallery/{{ gallery_name }}/photos/{{ photo.stem }}-800.jpg 800w"
+                srcset="/gallery/{{ gallery_name }}/photos/{{ photo.slug }}-400.jpg 400w, /gallery/{{ gallery_name }}/photos/{{ photo.slug }}-800.jpg 800w"
                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw">
             <img
-                src="/gallery/{{ gallery_name }}/photos/{{ photo.stem }}-400.jpg"
+                src="/gallery/{{ gallery_name }}/photos/{{ photo.slug }}-400.jpg"
                 alt="{{ photo.alt }}"
                 loading="lazy">
         </picture>

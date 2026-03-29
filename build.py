@@ -449,7 +449,7 @@ def build_site(project_root: Path):
         photo_data = []
         for p in gallery["photos"]:
             photo_data.append({
-                "stem": p["slug"],
+                "slug": p["slug"],
                 "alt": make_alt_text(p["source"].name),
                 "exif": p.get("exif", {}),
             })
