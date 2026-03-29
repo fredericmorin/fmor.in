@@ -12,6 +12,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 import exifread
+import yaml
 from PIL import Image
 
 ACCEPTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tiff"}
@@ -115,6 +116,30 @@ def extract_exif(photo_path: Path) -> dict:
     return exif
 
 
+def load_exif_override(photo_path: Path) -> dict:
+    """Load per-photo EXIF overrides from a sidecar YAML file.
+
+    For a photo at ``some/dir/photo.jpg``, reads ``some/dir/photo.yaml`` if it
+    exists.  The sidecar may contain any subset of EXIF fields to override or
+    supplement (e.g. ``camera``, ``date``, ``title``).  Unknown keys are passed
+    through so templates can display extra metadata such as ``title`` or
+    ``caption``.
+
+    Returns an empty dict if no sidecar is found or it cannot be parsed.
+    """
+    sidecar = photo_path.with_suffix(".yaml")
+    if not sidecar.exists():
+        return {}
+    try:
+        with open(sidecar) as f:
+            data = yaml.safe_load(f)
+        if isinstance(data, dict):
+            return {str(k): str(v) for k, v in data.items()}
+    except Exception as exc:
+        print(f"Warning: could not read EXIF override {sidecar}: {exc}", file=sys.stderr)
+    return {}
+
+
 def get_sort_key(photo: dict) -> tuple:
     """Sort key: EXIF date (newest first), then filename ascending as tiebreaker.
 
@@ -149,9 +174,11 @@ def scan_photoblog(photoblog_dir: Path) -> list[dict]:
     photos = []
     for f in sorted(photoblog_dir.iterdir()):
         if f.is_file() and f.suffix.lower() in ACCEPTED_EXTENSIONS:
+            exif = extract_exif(f)
+            exif.update(load_exif_override(f))
             photos.append({
                 "source": f,
-                "exif": extract_exif(f),
+                "exif": exif,
             })
 
     photos.sort(key=get_sort_key)
@@ -188,9 +215,11 @@ def scan_galleries(galleries_dir: Path) -> list[dict]:
                 )
             stems_seen[stem_lower] = f
 
+            exif = extract_exif(f)
+            exif.update(load_exif_override(f))
             photos.append({
                 "source": f,
-                "exif": extract_exif(f),
+                "exif": exif,
             })
 
         if not photos:
