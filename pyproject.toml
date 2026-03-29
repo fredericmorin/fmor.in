@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "Pillow>=10.1",
+    "pillow-heif>=0.18",
     "Jinja2>=3.1",
     "exifread>=3.0",
     "PyYAML>=6.0",

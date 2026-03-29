@@ -11,11 +11,16 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
+import io
+
 import exifread
 import yaml
 from PIL import Image
+from pillow_heif import register_heif_opener
 
-ACCEPTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tiff"}
+register_heif_opener()
+
+ACCEPTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tiff", ".heic", ".heif"}
 PHOTOBLOG_SIZES = [400, 800, 1920, 3200]
 GALLERY_SIZES = [400, 800, 1920, 3200]
 IMAGE_FORMATS = {"avif": "AVIF", "jpg": "JPEG"}
@@ -108,8 +113,19 @@ def photo_slug(photo: dict) -> str:
 def extract_exif(photo_path: Path) -> dict:
     """Extract EXIF metadata from a photo. Returns dict of display fields."""
     try:
-        with open(photo_path, "rb") as f:
-            tags = exifread.process_file(f, details=False)
+        if photo_path.suffix.lower() in {".heic", ".heif"}:
+            with Image.open(photo_path) as img:
+                raw = img.info.get("exif", b"")
+            if raw:
+                # Pillow returns HEIC EXIF with an "Exif\x00\x00" prefix; strip it
+                if raw[:6] == b"Exif\x00\x00":
+                    raw = raw[6:]
+                tags = exifread.process_file(io.BytesIO(raw), details=False)
+            else:
+                tags = {}
+        else:
+            with open(photo_path, "rb") as f:
+                tags = exifread.process_file(f, details=False)
     except Exception:
         return {}
 
