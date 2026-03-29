@@ -10,7 +10,7 @@
 
 {% block head_extra %}
 <script>
-    window.GALLERY_PHOTOS = {{ photos_json | safe }};
+    window.PHOTOS = {{ photos_json | safe }};
 </script>
 {% endblock %}
 
@@ -21,43 +21,28 @@
     <h1 class="gallery-title">{{ gallery_name | replace('_', ' ') | replace('-', ' ') | title }}</h1>
 </div>
 
-<div class="thumbnail-grid">
-    {% for photo in photos %}
-    <div class="thumbnail" data-index="{{ loop.index0 }}" onclick="openLightbox({{ loop.index0 }})" role="button" aria-label="View {{ photo.alt }}" tabindex="0">
-        <picture>
-            <source type="image/avif"
-                srcset="/gallery/{{ gallery_name }}/photos/{{ photo.slug }}-400.avif 400w, /gallery/{{ gallery_name }}/photos/{{ photo.slug }}-800.avif 800w"
-                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw">
-            <source type="image/jpeg"
-                srcset="/gallery/{{ gallery_name }}/photos/{{ photo.slug }}-400.jpg 400w, /gallery/{{ gallery_name }}/photos/{{ photo.slug }}-800.jpg 800w"
-                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw">
-            <img
-                src="/gallery/{{ gallery_name }}/photos/{{ photo.slug }}-400.jpg"
-                alt="{{ photo.alt }}"
-                loading="lazy">
-        </picture>
-    </div>
-    {% endfor %}
-</div>
-
-<!-- Lightbox -->
-<div class="lightbox" id="lightbox" role="dialog" aria-label="Photo viewer" aria-modal="true">
-    <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close lightbox">✕</button>
-
-    <div class="lightbox-photo">
-        <div class="nav-zone nav-zone--prev" onclick="navigateLightbox(-1)" role="button" aria-label="Previous photo" tabindex="0">
+<div class="slideshow" id="slideshow" data-section="gallery">
+    <div class="slideshow-photo">
+        <a href="#gallery" class="gallery-back photoblog-gallery-link" aria-label="View all photos as gallery" onclick="showPhotoblogGrid(event)">Grid</a>
+        <div class="nav-zone nav-zone--prev" onclick="navigatePhoto(-1)" role="button" aria-label="Previous photo" tabindex="0">
             <span class="arrow">‹</span>
         </div>
 
-        <picture id="lightbox-picture"></picture>
+        <picture id="photo-picture">
+            {# Populated by JS from PHOTOS manifest #}
+        </picture>
 
-        <div class="nav-zone nav-zone--next" onclick="navigateLightbox(1)" role="button" aria-label="Next photo" tabindex="0">
+        <div class="nav-zone nav-zone--next" onclick="navigatePhoto(1)" role="button" aria-label="Next photo" tabindex="0">
             <span class="arrow">›</span>
         </div>
 
-        <div class="photo-counter" id="lightbox-counter"></div>
+        <div class="photo-counter" id="photo-counter"></div>
     </div>
 
-    <div id="lightbox-exif"></div>
+    <div id="exif-container"></div>
+</div>
+
+<div id="photoblog-grid-view" style="display:none">
+    <div class="thumbnail-grid" id="photoblog-grid-thumbnails"></div>
 </div>
 {% endblock %}

@@ -363,21 +363,6 @@ def build_photo_json(photos: list[dict], base_path: str, sizes: list[int]) -> st
     return json.dumps(items)
 
 
-def build_gallery_photo_json(photos: list[dict], gallery_name: str) -> str:
-    """Build JSON manifest for gallery lightbox."""
-    items = []
-    for photo in photos:
-        slug = photo.get("slug") or photo_slug(photo)
-        items.append({
-            "base": f"/gallery/{gallery_name}/photos/{slug}",
-            "sizes": GALLERY_SIZES,
-            "exif": photo.get("exif", {}),
-            "date": photo.get("exif", {}).get("date", ""),
-            "alt": make_alt_text(photo["source"].name),
-        })
-    return json.dumps(items)
-
-
 def build_site(project_root: Path):
     """Main build function: scan, generate images, render templates."""
     content_dir = project_root / "content"
@@ -454,7 +439,7 @@ def build_site(project_root: Path):
                 "exif": p.get("exif", {}),
             })
 
-        photos_json = build_gallery_photo_json(gallery["photos"], gallery["name"])
+        photos_json = build_photo_json(gallery["photos"], f"/gallery/{gallery['name']}/photos", GALLERY_SIZES)
         (gal_out / "index.html").write_text(
             g_tmpl.render(
                 section="gallery",
