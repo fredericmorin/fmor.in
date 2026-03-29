@@ -10,4 +10,4 @@ serve: build
 	cd output && uv run python -m http.server 8000
 
 deploy: build
-	rsync -av output/ fmor.in:/data/fmor.in
+	rsync -av output/ fmor.in:/data/fmor.in/htdocs
