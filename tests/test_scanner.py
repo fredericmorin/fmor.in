@@ -1,4 +1,5 @@
 from pathlib import Path
+import pytest
 from tests.helpers import make_test_image
 
 
@@ -73,7 +74,6 @@ def test_scan_galleries_stem_collision_fails(tmp_content):
     make_test_image(tmp_content / "galleries" / "alpha" / "sunset.png")
 
     from build import scan_galleries
-    import pytest
     with pytest.raises(ValueError, match="stem collision"):
         scan_galleries(tmp_content / "galleries")
 
@@ -156,3 +156,99 @@ def test_exif_override_merged_over_extracted(tmp_path):
     exif = extract_exif(photo)
     exif.update(load_exif_override(photo))
     assert exif["camera"] == "Manual Override"
+
+
+# ---------------------------------------------------------------------------
+# EXIF date slug tests
+# ---------------------------------------------------------------------------
+
+def test_photo_slug_uses_exif_date(tmp_path):
+    """photo_slug() returns a slugified datetime when EXIF date is present."""
+    from build import photo_slug
+    photo = {
+        "source": tmp_path / "IMG_1234.jpg",
+        "exif": {"date": "2024:06:15 09:30:00"},
+    }
+    assert photo_slug(photo) == "20240615-093000"
+
+
+def test_photo_slug_falls_back_to_filename(tmp_path):
+    """photo_slug() falls back to slugified filename stem when no EXIF date."""
+    from build import photo_slug
+    photo = {
+        "source": tmp_path / "My_Great Photo.jpg",
+        "exif": {},
+    }
+    assert photo_slug(photo) == "my-great-photo"
+
+
+def test_photo_slug_falls_back_on_missing_exif(tmp_path):
+    """photo_slug() falls back to filename when exif key is absent."""
+    from build import photo_slug
+    photo = {"source": tmp_path / "sunset.jpg"}
+    assert photo_slug(photo) == "sunset"
+
+
+def test_photo_slug_appends_title(tmp_path):
+    """photo_slug() appends slugified sidecar title when present."""
+    from build import photo_slug
+    photo = {
+        "source": tmp_path / "IMG_1234.jpg",
+        "exif": {"date": "2024:06:15 09:30:00", "title": "Golden Hour"},
+    }
+    assert photo_slug(photo) == "20240615-093000-golden-hour"
+
+
+def test_photo_slug_title_only_no_date(tmp_path):
+    """photo_slug() appends title to filename slug when no date."""
+    from build import photo_slug
+    photo = {
+        "source": tmp_path / "IMG_1234.jpg",
+        "exif": {"title": "My Shot"},
+    }
+    assert photo_slug(photo) == "img-1234-my-shot"
+
+
+def test_photo_slug_ignores_blank_title(tmp_path):
+    """photo_slug() does not append title when it is empty/whitespace."""
+    from build import photo_slug
+    photo = {
+        "source": tmp_path / "IMG_1234.jpg",
+        "exif": {"date": "2024:06:15 09:30:00", "title": "  "},
+    }
+    assert photo_slug(photo) == "20240615-093000"
+
+
+def test_collect_photoblog_tasks_uses_exif_date_slug(tmp_path):
+    """collect_photoblog_tasks() uses EXIF date for output filename slug."""
+    from build import collect_photoblog_tasks
+    from tests.helpers import make_test_image
+
+    src = tmp_path / "src"
+    src.mkdir()
+    make_test_image(src / "IMG_1234.jpg")
+    photos = [{"source": src / "IMG_1234.jpg", "exif": {"date": "2023:12:01 14:00:00"}}]
+    out = tmp_path / "output" / "photoblog" / "photos"
+    tasks = collect_photoblog_tasks(photos, out)
+
+    slugs = {task[1].stem for task in tasks}
+    # All output files should be named with the EXIF date slug + size
+    assert all(stem.startswith("20231201-140000-") for stem in slugs)
+    assert photos[0]["slug"] == "20231201-140000"
+
+
+def test_collect_gallery_tasks_uses_exif_date_slug(tmp_path):
+    """collect_gallery_tasks() uses EXIF date for output filename slug."""
+    from build import collect_gallery_tasks
+    from tests.helpers import make_test_image
+
+    src = tmp_path / "src"
+    src.mkdir()
+    make_test_image(src / "IMG_5678.jpg")
+    photos = [{"source": src / "IMG_5678.jpg", "exif": {"date": "2024:03:20 18:45:30"}}]
+    out = tmp_path / "output" / "gallery" / "test" / "photos"
+    tasks = collect_gallery_tasks(photos, out)
+
+    slugs = {task[1].stem for task in tasks}
+    assert all(stem.startswith("20240320-184530-") for stem in slugs)
+    assert photos[0]["slug"] == "20240320-184530"
