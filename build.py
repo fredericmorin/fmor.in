@@ -369,22 +369,60 @@ def make_alt_text(filename: str) -> str:
     return stem.replace("_", " ").replace("-", " ")
 
 
-def build_photo_json(photos: list[dict], base_path: str, sizes: list[int]) -> str:
-    """Build JSON manifest for JS consumption."""
+def build_photo_list(photos: list[dict], base_path: str, sizes: list[int]) -> list[dict]:
+    """Build photo manifest list for JSON data files."""
     items = []
     for photo in photos:
         slug = photo.get("slug") or slugify(photo["source"].stem)
+        raw_exif = photo.get("exif", {})
+        # Strip sidecar-only fields from the exif object passed to the frontend
+        exif_display = {k: v for k, v in raw_exif.items() if k not in ("caption", "title")}
         items.append(
             {
                 "slug": slug,
                 "base": f"{base_path}/{slug}",
                 "sizes": sizes,
-                "exif": photo.get("exif", {}),
-                "date": photo.get("exif", {}).get("date", ""),
+                "exif": exif_display,
+                "date": raw_exif.get("date", ""),
                 "alt": make_alt_text(photo["source"].name),
+                "caption": raw_exif.get("caption", "") or "",
             }
         )
-    return json.dumps(items)
+    return items
+
+
+def write_data_files(output_dir: Path, photoblog_photos: list[dict], galleries: list[dict]):
+    """Write JSON data manifests consumed by the Vue SPA at runtime."""
+    data_dir = output_dir / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    galleries_data_dir = data_dir / "galleries"
+    galleries_data_dir.mkdir(parents=True, exist_ok=True)
+
+    # Photoblog manifest
+    pb_list = build_photo_list(photoblog_photos, "/photoblog/photos", PHOTOBLOG_SIZES)
+    (data_dir / "photoblog.json").write_text(json.dumps(pb_list))
+
+    # Gallery index manifest
+    gallery_index = []
+    for gallery in galleries:
+        cover_stem = gallery.get("cover_stem", "")
+        gallery_index.append(
+            {
+                "name": gallery["name"],
+                "slug": gallery["name"],
+                "cover_base": f"/gallery/{gallery['name']}/photos/{cover_stem}",
+                "sizes": GALLERY_SIZES,
+                "count": gallery["count"],
+            }
+        )
+    (data_dir / "gallery-index.json").write_text(json.dumps(gallery_index))
+
+    # Per-gallery manifests
+    for gallery in galleries:
+        g_list = build_photo_list(
+            gallery["photos"], f"/gallery/{gallery['name']}/photos", GALLERY_SIZES
+        )
+        (galleries_data_dir / f"{gallery['name']}.json").write_text(json.dumps(g_list))
 
 
 def build_site(project_root: Path):
@@ -425,59 +463,41 @@ def build_site(project_root: Path):
 
     # 3. Render templates
     env = Environment(loader=FileSystemLoader(str(template_dir)))
+    shell = env.get_template("shell.html")
 
-    # Landing page
+    # Landing page (meta-refresh redirect — no SPA bundle needed)
     index_tmpl = env.get_template("index.html")
     (output_dir / "index.html").write_text(index_tmpl.render())
 
-    # Photoblog
+    # Photoblog SPA shell
     (output_dir / "photoblog").mkdir(parents=True, exist_ok=True)
-    pb_tmpl = env.get_template("photoblog.html")
-    photos_json = build_photo_json(photoblog_photos, "/photoblog/photos", PHOTOBLOG_SIZES)
     (output_dir / "photoblog" / "index.html").write_text(
-        pb_tmpl.render(
-            section="photoblog",
-            photos=photoblog_photos,
-            photos_json=photos_json,
-        )
+        shell.render(title="fmor.in — Photoblog", og_title="fmor.in", og_image=None)
     )
 
-    # Gallery index
+    # Gallery index SPA shell
     (output_dir / "gallery").mkdir(parents=True, exist_ok=True)
-    gi_tmpl = env.get_template("gallery_index.html")
     (output_dir / "gallery" / "index.html").write_text(
-        gi_tmpl.render(section="gallery", galleries=galleries)
+        shell.render(title="fmor.in — Galleries", og_title="Galleries", og_image=None)
     )
 
-    # Individual gallery pages
-    g_tmpl = env.get_template("gallery.html")
+    # Individual gallery SPA shells
     for gallery in galleries:
         gal_out = output_dir / "gallery" / gallery["name"]
         gal_out.mkdir(parents=True, exist_ok=True)
-
-        photo_data = []
-        for p in gallery["photos"]:
-            photo_data.append(
-                {
-                    "slug": p["slug"],
-                    "alt": make_alt_text(p["source"].name),
-                    "exif": p.get("exif", {}),
-                }
-            )
-
-        photos_json = build_photo_json(
-            gallery["photos"], f"/gallery/{gallery['name']}/photos", GALLERY_SIZES
-        )
+        display = gallery["name"].replace("-", " ").title()
         (gal_out / "index.html").write_text(
-            g_tmpl.render(
-                section="gallery",
-                gallery_name=gallery["name"],
-                photos=photo_data,
-                photos_json=photos_json,
+            shell.render(
+                title=f"fmor.in — {display}",
+                og_title=display,
+                og_image=None,
             )
         )
 
-    # 4. Copy static assets
+    # 4. Write JSON data files
+    write_data_files(output_dir, photoblog_photos, galleries)
+
+    # 5. Copy static assets
     static_out = output_dir / "static"
     if static_out.exists():
         shutil.rmtree(static_out)

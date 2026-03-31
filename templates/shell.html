@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title }}</title>
+    <meta property="og:title" content="{{ og_title }}" />
+    {% if og_image %}<meta property="og:image" content="{{ og_image }}" />{% endif %}
+    <link rel="stylesheet" href="/static/dist/bundle.css" />
+    <link rel="icon" href="/favicon.ico" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/static/dist/bundle.js"></script>
+  </body>
+</html>
