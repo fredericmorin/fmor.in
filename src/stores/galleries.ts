@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
 import type { GalleryMeta, Photo } from "@/types";
+import { fetchWithPreload } from "@/lib/preload";
 
 export const useGalleriesStore = defineStore("galleries", () => {
   const index = ref<GalleryMeta[]>([]);
@@ -16,9 +17,7 @@ export const useGalleriesStore = defineStore("galleries", () => {
     indexLoading.value = true;
     indexError.value = null;
     try {
-      const res = await fetch("/data/gallery-index.json");
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      index.value = await res.json();
+      index.value = await fetchWithPreload<GalleryMeta[]>("/data/gallery-index.json");
     } catch (e) {
       indexError.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -31,9 +30,10 @@ export const useGalleriesStore = defineStore("galleries", () => {
     galleryLoading.value.set(name, true);
     galleryError.value.delete(name);
     try {
-      const res = await fetch(`/data/galleries/${name}.json`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      byName.value.set(name, await res.json());
+      byName.value.set(
+        name,
+        await fetchWithPreload<Photo[]>(`/data/galleries/${name}.json`),
+      );
     } catch (e) {
       galleryError.value.set(name, e instanceof Error ? e.message : String(e));
     } finally {

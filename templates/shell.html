@@ -8,6 +8,13 @@
     {% if og_image %}<meta property="og:image" content="{{ og_image }}" />{% endif %}
     <link rel="stylesheet" href="/static/dist/bundle.css" />
     <link rel="icon" href="/favicon.ico" />
+    {% if preload_urls %}
+    <script>
+      window.__PRELOAD__={};
+      {% for url in preload_urls %}window.__PRELOAD__[{{ url|tojson }}]=fetch({{ url|tojson }}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();});
+      {% endfor %}
+    </script>
+    {% endif %}
   </head>
   <body>
     <div id="app"></div>

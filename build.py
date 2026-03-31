@@ -472,13 +472,23 @@ def build_site(project_root: Path):
     # Photoblog SPA shell
     (output_dir / "photoblog").mkdir(parents=True, exist_ok=True)
     (output_dir / "photoblog" / "index.html").write_text(
-        shell.render(title="fmor.in — Photoblog", og_title="fmor.in", og_image=None)
+        shell.render(
+            title="fmor.in — Photoblog",
+            og_title="fmor.in",
+            og_image=None,
+            preload_urls=["/data/photoblog.json"],
+        )
     )
 
     # Gallery index SPA shell
     (output_dir / "gallery").mkdir(parents=True, exist_ok=True)
     (output_dir / "gallery" / "index.html").write_text(
-        shell.render(title="fmor.in — Galleries", og_title="Galleries", og_image=None)
+        shell.render(
+            title="fmor.in — Galleries",
+            og_title="Galleries",
+            og_image=None,
+            preload_urls=["/data/gallery-index.json"],
+        )
     )
 
     # Individual gallery SPA shells
@@ -491,6 +501,10 @@ def build_site(project_root: Path):
                 title=f"fmor.in — {display}",
                 og_title=display,
                 og_image=None,
+                preload_urls=[
+                    "/data/gallery-index.json",
+                    f"/data/galleries/{gallery['name']}.json",
+                ],
             )
         )
 

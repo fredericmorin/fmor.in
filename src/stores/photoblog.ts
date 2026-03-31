@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
 import type { Photo } from "@/types";
+import { fetchWithPreload } from "@/lib/preload";
 
 export const usePhotoblogStore = defineStore("photoblog", () => {
   const photos = ref<Photo[]>([]);
@@ -12,9 +13,7 @@ export const usePhotoblogStore = defineStore("photoblog", () => {
     loading.value = true;
     error.value = null;
     try {
-      const res = await fetch("/data/photoblog.json");
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      photos.value = await res.json();
+      photos.value = await fetchWithPreload<Photo[]>("/data/photoblog.json");
     } catch (e) {
       error.value = e instanceof Error ? e.message : String(e);
     } finally {
