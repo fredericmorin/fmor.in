@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { usePhotoblogStore } from "@/stores/photoblog";
 import { useGalleriesStore } from "@/stores/galleries";
@@ -67,9 +67,26 @@ const secondaryLinks = computed(() => {
   return links;
 });
 
+const parentRoute = computed(() => {
+  for (let i = breadcrumbItems.value.length - 1; i >= 0; i--) {
+    if (breadcrumbItems.value[i].to) return breadcrumbItems.value[i].to!;
+  }
+  return null;
+});
+
 function navigate(path: string) {
   router.push(path);
 }
+
+function onKeydown(e: KeyboardEvent) {
+  if ((e.key === "ArrowUp" || e.key === "Escape") && parentRoute.value) {
+    e.preventDefault();
+    router.push(parentRoute.value);
+  }
+}
+
+onMounted(() => document.addEventListener("keydown", onKeydown));
+onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 </script>
 
 <template>
