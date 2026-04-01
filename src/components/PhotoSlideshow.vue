@@ -102,6 +102,28 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         {{ index + 1 }} / {{ total }}
       </div>
 
+      <!-- Blurred placeholder (uses grid thumbnail sizes → cache hit) -->
+      <picture v-if="photo" class="absolute inset-0 w-full h-full">
+        <source
+          v-if="avifSupported"
+          type="image/avif"
+          :srcset="srcset(photo, 'avif')"
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+        />
+        <source
+          type="image/jpeg"
+          :srcset="srcset(photo, 'jpg')"
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+        />
+        <img
+          :src="`${photo.base}-${photo.sizes[0]}.jpg`"
+          :alt="photo.alt"
+          class="w-full h-full object-contain"
+          style="filter: blur(12px); transform: scale(1.05)"
+          draggable="false"
+        />
+      </picture>
+
       <!-- Image -->
       <picture v-if="photo" class="max-w-full max-h-full">
         <source
