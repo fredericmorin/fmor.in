@@ -21,7 +21,7 @@ Implement a blur-up progressive loading pattern in `PhotoSlideshow.vue`:
 
 Two images are stacked in the photo area:
 
-1. **Placeholder (bottom):** `<img>` using `{base}-{sizes[0]}.{ext}` — the smallest available size. Rendered with `object-contain`, CSS `filter: blur(12px)`, and `transform: scale(1.05)` (to hide blurred edges). Always visible.
+1. **Placeholder (bottom):** A `<picture>` element using the same `srcset` as the grid thumbnail and `sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"`. This causes the browser to resolve the same URL it already fetched for the grid thumbnail — a guaranteed cache hit, so the placeholder renders instantly. Rendered with `object-contain`, CSS `filter: blur(12px)`, and `transform: scale(1.05)` (to hide blurred edges). Always visible.
 
 2. **Full-res (top):** The existing `<picture>` element. Starts at `opacity: 0`, transitions to `opacity: 1` over 0.4s once its `@load` event fires.
 
@@ -36,11 +36,11 @@ A single reactive boolean `isLoading` per photo:
 
 - **Already cached:** `@load` fires immediately; transition is imperceptible — correct behaviour
 - **Index changes mid-load:** The `watch` on `index` resets `isLoading = true`. The full-res `<img>` gets `:key="photo.slug"` so Vue recreates it on photo change, ensuring `@load` always fires for the current photo and stale load events from the previous photo are discarded.
-- **Deep-linked photo:** No grid visit means the placeholder may also be uncached; the blur-up still occurs from the same small image, just with a brief delay on both layers — acceptable
+- **Deep-linked photo:** No grid visit means the thumbnail-sized image isn't cached; both placeholder and full-res load from scratch. The placeholder still appears first (being smaller), so the blur-up still works, just with a short delay — acceptable
 
 ### Format selection
 
-The placeholder uses the same format logic as the full-res image (AVIF if supported, else JPEG), ensuring the smallest size used matches what the browser would cache.
+The placeholder uses the same `srcset` helper and `avifSupported` flag as the full-res image, so it requests the same format (AVIF or JPEG) the browser already cached from the grid.
 
 ## Scope
 
