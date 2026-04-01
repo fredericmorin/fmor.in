@@ -124,8 +124,8 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         />
       </picture>
 
-      <!-- Image -->
-      <picture v-if="photo" class="max-w-full max-h-full">
+      <!-- Full-res image (fades in once loaded) -->
+      <picture v-if="photo" class="absolute inset-0 flex items-center justify-center w-full h-full">
         <source
           v-if="avifSupported"
           type="image/avif"
@@ -134,11 +134,13 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         />
         <source type="image/jpeg" :srcset="srcset(photo, 'jpg')" sizes="100vw" />
         <img
+          :key="photo.slug"
           :src="fallbackSrc(photo)"
           :alt="photo.alt"
           class="max-w-full max-h-full object-contain select-none"
-          style="max-height: calc(100vh - 40px - 40px)"
+          :style="{ maxHeight: 'calc(100vh - 40px - 40px)', transition: 'opacity 0.4s ease', opacity: isLoading ? 0 : 1 }"
           draggable="false"
+          @load="onFullResLoad"
         />
       </picture>
 
