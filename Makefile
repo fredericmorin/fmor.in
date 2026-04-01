@@ -18,6 +18,9 @@ serve: build-py
 deploy: build
 	rsync -av output/ fmor.in:/data/fmor.in/htdocs
 
+test:
+	uv run --extra dev pytest
+
 fmt:
 	uvx ruff format .
 	uvx ruff check --fix .

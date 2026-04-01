@@ -31,8 +31,8 @@ def test_full_build_produces_output(tmp_path):
     assert (output / "photoblog" / "index.html").exists()
     assert (output / "gallery" / "index.html").exists()
     assert (output / "gallery" / "testgal" / "index.html").exists()
-    assert (output / "static" / "css" / "style.css").exists()
-    assert (output / "static" / "js" / "main.js").exists()
+    assert (output / "static" / "dist" / "bundle.css").exists()
+    assert (output / "static" / "dist" / "bundle.js").exists()
 
     # Check responsive images were generated
     pb_photos = output / "photoblog" / "photos"
@@ -100,9 +100,10 @@ def test_build_with_empty_content(tmp_path):
     assert (output / "gallery" / "index.html").exists()
 
 
-def test_gallery_page_uses_slideshow_pattern(tmp_path):
-    """Gallery page HTML should use the photoblog slideshow UX, not a lightbox."""
+def test_gallery_page_uses_spa_shell(tmp_path):
+    """Gallery page HTML should be a SPA shell with preload hints for gallery data."""
     import shutil
+    import json
     from build import build_site
 
     content = tmp_path / "content"
@@ -119,24 +120,18 @@ def test_gallery_page_uses_slideshow_pattern(tmp_path):
 
     html = (tmp_path / "output" / "gallery" / "mygal" / "index.html").read_text()
 
-    # Uses slideshow manifest key, not lightbox key
-    assert "window.PHOTOS" in html
-    assert "window.GALLERY_PHOTOS" not in html
+    # SPA shell structure
+    assert '<div id="app"></div>' in html
+    assert "/static/dist/bundle.js" in html
+    assert "/static/dist/bundle.css" in html
 
-    # Has slideshow and grid containers
-    assert 'id="slideshow"' in html
-    assert 'id="photoblog-grid-view"' in html
-    assert 'id="photoblog-grid-thumbnails"' in html
+    # Preloads both gallery index and individual gallery data
+    assert "__PRELOAD__" in html
+    assert '"/data/gallery-index.json"' in html
+    assert '"/data/galleries/mygal.json"' in html
 
-    # No lightbox
-    assert 'id="lightbox"' not in html
-
-    # JSON manifest includes slug field (required for hash navigation)
-    import json
-
-    script_start = html.index("window.PHOTOS = ") + len("window.PHOTOS = ")
-    script_end = html.index(";", script_start)
-    photos_data = json.loads(html[script_start:script_end])
-    assert len(photos_data) == 2
-    assert all("slug" in p for p in photos_data)
-    assert all(p["base"].startswith("/gallery/mygal/photos/") for p in photos_data)
+    # JSON data file was written with correct structure
+    data = json.loads((tmp_path / "output" / "data" / "galleries" / "mygal.json").read_text())
+    assert len(data) == 2
+    assert all("slug" in p for p in data)
+    assert all(p["base"].startswith("/gallery/mygal/photos/") for p in data)
