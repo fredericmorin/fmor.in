@@ -25,13 +25,6 @@ onMounted(async () => {
   }
 });
 
-function thumbSrcset(photo: Photo, format: "avif" | "jpg") {
-  return photo.sizes.map((s) => `${photo.base}-${s}.${format} ${s}w`).join(", ");
-}
-
-function thumbFallback(photo: Photo) {
-  return `${photo.base}-${photo.sizes[0]}.jpg`;
-}
 </script>
 
 <template>
@@ -51,26 +44,13 @@ function thumbFallback(photo: Photo) {
         :aria-current="i === activeIndex ? 'true' : undefined"
         @click="emit('select', i)"
       >
-        <picture class="block w-full h-full">
-          <source
-            v-if="avifSupported"
-            type="image/avif"
-            :srcset="thumbSrcset(photo, 'avif')"
-            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-          />
-          <source
-            type="image/jpeg"
-            :srcset="thumbSrcset(photo, 'jpg')"
-            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-          />
-          <img
-            :src="thumbFallback(photo)"
-            :alt="photo.alt"
-            class="w-full h-full object-cover transition-opacity duration-200"
-            :class="i === activeIndex ? 'ring-2 ring-inset ring-white' : ''"
-            loading="lazy"
-          />
-        </picture>
+        <img
+          :src="`${photo.base}-${photo.sizes[0]}.${avifSupported ? 'avif' : 'jpg'}`"
+          :alt="photo.alt"
+          class="w-full h-full object-cover transition-opacity duration-200"
+          :class="i === activeIndex ? 'ring-2 ring-inset ring-white' : ''"
+          loading="lazy"
+        />
       </button>
     </div>
   </div>
