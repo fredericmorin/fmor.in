@@ -66,7 +66,6 @@ watch(
 function onKeydown(e: KeyboardEvent) {
   if (e.key === "ArrowLeft" && canPrev.value) emit("prev");
   else if (e.key === "ArrowRight" && canNext.value) emit("next");
-  else if (e.key === "Escape") emit("showGrid");
 }
 
 onMounted(() => document.addEventListener("keydown", onKeydown));
