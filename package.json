@@ -1,28 +1,38 @@
 {
   "name": "fmor.in",
-  "version": "1.0.0",
-  "description": "Static photography site with a full-screen photoblog slideshow and a grid-based gallery. No backend — a Python build script processes source photos and emits a folder of HTML/CSS/JS.",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs",
-    "test": "tests"
-  },
+  "version": "2.0.0",
+  "description": "Static photography site — Vue 3 SPA + Python image pipeline.",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "vite build",
+    "dev": "vite"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fredericmorin/fmor.in.git"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "dependencies": {
+    "vue": "^3.5.13",
+    "vue-router": "^4.4.5",
+    "pinia": "^2.2.6",
+    "radix-vue": "^1.9.9",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.5.5",
+    "lucide-vue-next": "^0.468.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.1",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.0.11",
+    "typescript": "^5.7.3",
+    "tailwindcss": "^3.4.17",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49"
+  },
   "bugs": {
     "url": "https://github.com/fredericmorin/fmor.in/issues"
   },
-  "homepage": "https://github.com/fredericmorin/fmor.in#readme",
-  "devDependencies": {
-    "prettier": "^3.8.1"
-  }
+  "homepage": "https://github.com/fredericmorin/fmor.in#readme"
 }
