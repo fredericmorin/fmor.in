@@ -36,14 +36,14 @@ function openPhoto(i: number) {
 function prevPhoto() {
   const i = currentIndex.value;
   if (i !== null && i > 0) {
-    router.replace({ hash: `#${photos.value[i - 1].slug}` });
+    router.push({ hash: `#${photos.value[i - 1].slug}` });
   }
 }
 
 function nextPhoto() {
   const i = currentIndex.value;
   if (i !== null && i < photos.value.length - 1) {
-    router.replace({ hash: `#${photos.value[i + 1].slug}` });
+    router.push({ hash: `#${photos.value[i + 1].slug}` });
   }
 }
 

@@ -31,14 +31,14 @@ function openPhoto(i: number) {
 function prevPhoto() {
   const i = currentIndex.value;
   if (i !== null && i > 0) {
-    router.replace({ hash: `#${store.photos[i - 1].slug}` });
+    router.push({ hash: `#${store.photos[i - 1].slug}` });
   }
 }
 
 function nextPhoto() {
   const i = currentIndex.value;
   if (i !== null && i < store.photos.length - 1) {
-    router.replace({ hash: `#${store.photos[i + 1].slug}` });
+    router.push({ hash: `#${store.photos[i + 1].slug}` });
   }
 }
 
