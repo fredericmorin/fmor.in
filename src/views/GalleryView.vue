@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, onMounted } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useGalleriesStore } from "@/stores/galleries";
 import PhotoSlideshow from "@/components/PhotoSlideshow.vue";
@@ -27,6 +27,11 @@ const currentIndex = computed<number | null>(() => {
 });
 
 const showGrid = computed(() => currentIndex.value === null);
+
+const lastViewedIndex = ref<number | null>(null);
+watch(currentIndex, (idx) => {
+  if (idx !== null) lastViewedIndex.value = idx;
+});
 
 function openPhoto(i: number) {
   const slug = photos.value[i]?.slug;
@@ -77,7 +82,7 @@ watch(
       {{ error }}
     </div>
     <template v-else>
-      <PhotoGrid v-if="showGrid" :photos="photos" @select="openPhoto" />
+      <PhotoGrid v-if="showGrid" :photos="photos" :active-index="lastViewedIndex ?? undefined" @select="openPhoto" />
       <PhotoSlideshow
         v-else
         :photos="photos"
