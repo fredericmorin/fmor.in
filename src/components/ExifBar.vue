@@ -34,3 +34,11 @@ const hasData = computed(() => fields.value.length > 0 || props.date);
     </span>
   </div>
 </template>
+
+<style scoped>
+@media (orientation: landscape) and (max-height: 500px) {
+  div {
+    display: none;
+  }
+}
+</style>
