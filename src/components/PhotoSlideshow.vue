@@ -88,7 +88,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 <template>
   <div class="flex flex-col" style="height: calc(100vh - 40px)">
     <!-- Photo area -->
-    <div class="relative flex-1 flex items-center justify-center bg-neutral-950 overflow-hidden">
+    <div class="relative flex-1 flex items-center justify-center bg-neutral-900 overflow-hidden">
       <!-- Grid toggle -->
       <button
         class="absolute top-3 left-3 z-10 text-xs text-neutral-500 hover:text-neutral-300 transition-colors px-2 py-1 rounded"
@@ -102,27 +102,15 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         {{ index + 1 }} / {{ total }}
       </div>
 
-      <!-- Blurred placeholder (uses grid thumbnail sizes → cache hit) -->
-      <picture v-if="photo" class="absolute inset-0 w-full h-full">
-        <source
-          v-if="avifSupported"
-          type="image/avif"
-          :srcset="srcset(photo, 'avif')"
-          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-        />
-        <source
-          type="image/jpeg"
-          :srcset="srcset(photo, 'jpg')"
-          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-        />
-        <img
-          :src="`${photo.base}-${photo.sizes[0]}.jpg`"
-          :alt="photo.alt"
-          class="w-full h-full object-contain"
-          style="filter: blur(12px); transform: scale(1.05)"
-          draggable="false"
-        />
-      </picture>
+      <!-- Blurred placeholder -->
+      <img
+        v-if="photo"
+        :src="`${photo.base}-${photo.sizes[0]}.${avifSupported ? 'avif' : 'jpg'}`"
+        :alt="photo.alt"
+        class="absolute inset-0 w-full h-full object-contain"
+        style="filter: blur(12px); transform: scale(1.05)"
+        draggable="false"
+      />
 
       <!-- Full-res image (fades in once loaded) -->
       <picture v-if="photo" class="absolute inset-0 flex items-center justify-center w-full h-full">
@@ -138,7 +126,11 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
           :src="fallbackSrc(photo)"
           :alt="photo.alt"
           class="max-w-full max-h-full object-contain select-none"
-          :style="{ maxHeight: 'calc(100vh - 40px - 40px)', transition: 'opacity 0.4s ease', opacity: isLoading ? 0 : 1 }"
+          :style="{
+            maxHeight: 'calc(100vh - 40px - 40px)',
+            transition: 'opacity 0.4s ease',
+            opacity: isLoading ? 0 : 1,
+          }"
           draggable="false"
           @load="onFullResLoad"
         />
