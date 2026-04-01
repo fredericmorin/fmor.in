@@ -78,7 +78,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
     <div class="relative flex-1 flex items-center justify-center bg-neutral-900 overflow-hidden">
       <!-- Grid toggle -->
       <button
-        class="absolute top-3 left-3 z-10 text-xs text-neutral-500 hover:text-neutral-300 transition-colors px-2 py-1 rounded"
+        class="absolute top-3 left-3 z-10 text-xs text-neutral-500 hover:text-neutral-300 transition-colors px-2 py-1 rounded grid-btn"
         @click="emit('showGrid')"
       >
         GRID
@@ -90,7 +90,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       </div>
 
       <!-- Image -->
-      <picture v-if="photo" class="max-w-full max-h-full">
+      <picture v-if="photo" class="absolute inset-0 flex items-center justify-center">
         <source
           v-if="avifSupported"
           type="image/avif"
@@ -101,8 +101,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         <img
           :src="fallbackSrc(photo)"
           :alt="photo.alt"
-          class="photo-img max-w-full max-h-full object-contain select-none"
-          style="max-height: calc(100vh - 40px - 40px)"
+          class="photo-img w-full h-full object-contain select-none"
           draggable="false"
         />
       </picture>
@@ -138,12 +137,19 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 </template>
 
 <style scoped>
+.grid-btn::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+}
+
 @media (orientation: landscape) and (max-height: 500px) {
   .slideshow-wrapper {
     height: 100vh !important;
   }
-  .photo-img {
-    max-height: 100vh !important;
+  .grid-btn {
+    top: max(0.75rem, env(safe-area-inset-top, 0px));
+    left: max(0.75rem, env(safe-area-inset-left, 0px));
   }
 }
 </style>

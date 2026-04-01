@@ -21,16 +21,21 @@ interface BreadcrumbItem {
   to?: string;
 }
 
+const hasPhoto = computed(() => {
+  const hash = route.hash.replace("#", "");
+  return Boolean(hash && hash !== "grid");
+});
+
 const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
   const hash = route.hash.replace("#", "");
-  const hasPhoto = Boolean(hash && hash !== "grid");
+  const hasPhotoNow = Boolean(hash && hash !== "grid");
 
   if (photoblogActive.value) {
     const items: BreadcrumbItem[] = [
       { label: "fmor.in", to: "/photoblog/" },
-      hasPhoto ? { label: "Photoblog", to: "/photoblog/" } : { label: "Photoblog" },
+      hasPhotoNow ? { label: "Photoblog", to: "/photoblog/" } : { label: "Photoblog" },
     ];
-    if (hasPhoto) {
+    if (hasPhotoNow) {
       const idx = photoblogStore.photoBySlug(hash);
       const photo = idx !== -1 ? photoblogStore.photos[idx] : null;
       items.push({ label: photo?.alt || hash });
@@ -46,7 +51,7 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
       return items;
     }
     items.push({ label: "Gallery", to: "/gallery/" });
-    if (hasPhoto) {
+    if (hasPhotoNow) {
       items.push({ label: displayName(name), to: `/gallery/${name}/` });
       const idx = galleriesStore.photoBySlug(name, hash);
       const photo = idx !== -1 ? galleriesStore.photosFor(name)[idx] : null;
@@ -92,6 +97,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 <template>
   <header
     class="fixed top-0 left-0 right-0 z-50 h-10 flex items-center justify-between px-4 bg-neutral-950 border-b border-neutral-800"
+    :class="{ 'in-slideshow': hasPhoto }"
   >
     <nav class="flex items-center text-sm">
       <template v-for="(item, i) in breadcrumbItems" :key="i">
@@ -126,7 +132,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 
 <style scoped>
 @media (orientation: landscape) and (max-height: 500px) {
-  header {
+  header.in-slideshow {
     display: none;
   }
 }
