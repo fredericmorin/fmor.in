@@ -126,11 +126,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
           :src="fallbackSrc(photo)"
           :alt="photo.alt"
           class="max-w-full max-h-full object-contain select-none"
-          :style="{
-            maxHeight: 'calc(100vh - 40px - 40px)',
-            transition: 'opacity 0.4s ease',
-            opacity: isLoading ? 0 : 1,
-          }"
+          :style="{ maxHeight: 'calc(100vh - 40px - 40px)', opacity: isLoading ? 0 : 1 }"
           draggable="false"
           @load="onFullResLoad"
         />
