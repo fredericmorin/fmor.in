@@ -7,7 +7,7 @@ Static photography site. Python build script → HTML/CSS/JS output. No backend.
 - `make build` — full build
 - `make serve` — build + serve on localhost:8000
 - `make deploy` — clean build + rsync to fmor.in:/data/fmor.in
-- `uv run pytest` — run tests
+- `uv run python -m pytest` — run tests
 
 ## Code conventions
 

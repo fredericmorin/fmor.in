@@ -1,3 +1,34 @@
+# Header Breadcrumbs Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Replace the site header's logo+nav layout with a breadcrumb trail on the left and inactive section links on the right.
+
+**Architecture:** `AppHeader` imports both Pinia stores and derives breadcrumb items and secondary nav links purely from route state + store data. `GalleryView` drops its in-page breadcrumb slot since the header now owns that context.
+
+**Tech Stack:** Vue 3 (Composition API), Vue Router, Pinia
+
+---
+
+## File Map
+
+| File | Change |
+|---|---|
+| `src/components/AppHeader.vue` | Full rewrite of script + template |
+| `src/views/GalleryView.vue` | Remove `#header` slot from `<PhotoGrid>` |
+
+No new files. No test files (project has no frontend test suite — only Python build tests).
+
+---
+
+### Task 1: Rewrite AppHeader.vue
+
+**Files:**
+- Modify: `src/components/AppHeader.vue`
+
+- [ ] **Step 1: Replace the file contents**
+
+```vue
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -106,3 +137,87 @@ function navigate(path: string) {
     </nav>
   </header>
 </template>
+```
+
+- [ ] **Step 2: Verify it builds without type errors**
+
+```bash
+cd /Users/fred/project/fmor.in && npx tsc --noEmit
+```
+
+Expected: no output (zero errors).
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/components/AppHeader.vue
+git commit -m "feat: replace header nav with breadcrumb trail"
+```
+
+---
+
+### Task 2: Remove in-page breadcrumb from GalleryView
+
+**Files:**
+- Modify: `src/views/GalleryView.vue`
+
+- [ ] **Step 1: Replace the `<PhotoGrid>` usage** (lines 80–92) to drop the slot
+
+Old:
+```vue
+      <PhotoGrid v-if="showGrid" :photos="photos" @select="openPhoto">
+        <template #header>
+          <div class="flex items-center gap-4 px-4 py-3 border-b border-neutral-800">
+            <button
+              class="text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
+              @click="router.push('/gallery/')"
+            >
+              ← Galleries
+            </button>
+            <h1 class="text-sm text-neutral-300 font-medium">{{ displayName(name) }}</h1>
+          </div>
+        </template>
+      </PhotoGrid>
+```
+
+New:
+```vue
+      <PhotoGrid v-if="showGrid" :photos="photos" @select="openPhoto" />
+```
+
+- [ ] **Step 2: Verify it builds without type errors**
+
+```bash
+cd /Users/fred/project/fmor.in && npx tsc --noEmit
+```
+
+Expected: no output (zero errors).
+
+- [ ] **Step 3: Smoke test in the browser**
+
+```bash
+make serve
+```
+
+Visit each route and verify:
+
+| URL | Expected breadcrumb (left) | Expected right nav |
+|---|---|---|
+| `/photoblog/` | `fmor.in / Photoblog` | `Gallery` |
+| `/photoblog/#<any-slug>` | `fmor.in / Photoblog / [photo name]` | `Gallery` |
+| `/gallery/` | `fmor.in / Gallery` | `Photoblog` |
+| `/gallery/<name>/` | `fmor.in / Gallery / [Name]` | `Photoblog` — no in-page breadcrumb below header |
+| `/gallery/<name>/#<slug>` | `fmor.in / Gallery / [Name] / [photo name]` | `Photoblog` |
+
+Also confirm clicking ancestor crumbs navigates correctly:
+- `fmor.in` → goes to `/photoblog/`
+- `Photoblog` (when photo open) → goes to `/photoblog/`
+- `Gallery` (when in gallery) → goes to `/gallery/`
+- `[Gallery Name]` (when photo open) → goes back to gallery grid
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/views/GalleryView.vue
+git commit -m "feat: remove in-page gallery breadcrumb (moved to header)"
+```

@@ -77,19 +77,7 @@ watch(
       {{ error }}
     </div>
     <template v-else>
-      <PhotoGrid v-if="showGrid" :photos="photos" @select="openPhoto">
-        <template #header>
-          <div class="flex items-center gap-4 px-4 py-3 border-b border-neutral-800">
-            <button
-              class="text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
-              @click="router.push('/gallery/')"
-            >
-              ← Galleries
-            </button>
-            <h1 class="text-sm text-neutral-300 font-medium">{{ displayName(name) }}</h1>
-          </div>
-        </template>
-      </PhotoGrid>
+      <PhotoGrid v-if="showGrid" :photos="photos" @select="openPhoto" />
       <PhotoSlideshow
         v-else
         :photos="photos"
