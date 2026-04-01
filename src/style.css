@@ -35,4 +35,8 @@
   body {
     overflow-x: hidden;
   }
+
+  button {
+    touch-action: manipulation;
+  }
 }

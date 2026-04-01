@@ -37,7 +37,7 @@ function thumbFallback(photo: Photo) {
 <template>
   <div>
     <slot name="header" />
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-0.5 p-0.5">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-0.5 p-0.5">
       <button
         v-for="(photo, i) in photos"
         :key="photo.slug"
@@ -56,12 +56,12 @@ function thumbFallback(photo: Photo) {
             v-if="avifSupported"
             type="image/avif"
             :srcset="thumbSrcset(photo, 'avif')"
-            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 1200px) 33vw, 25vw"
           />
           <source
             type="image/jpeg"
             :srcset="thumbSrcset(photo, 'jpg')"
-            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 1200px) 33vw, 25vw"
           />
           <img
             :src="thumbFallback(photo)"
