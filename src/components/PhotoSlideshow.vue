@@ -75,7 +75,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 <template>
   <div class="flex flex-col" style="height: calc(100vh - 40px)">
     <!-- Photo area -->
-    <div class="relative flex-1 flex items-center justify-center bg-neutral-950 overflow-hidden">
+    <div class="relative flex-1 flex items-center justify-center bg-neutral-900 overflow-hidden">
       <!-- Grid toggle -->
       <button
         class="absolute top-3 left-3 z-10 text-xs text-neutral-500 hover:text-neutral-300 transition-colors px-2 py-1 rounded"
