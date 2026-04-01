@@ -103,15 +103,14 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       </div>
 
       <!-- Blurred placeholder -->
-      <div v-if="photo && isLoading" class="absolute inset-0 overflow-hidden">
-        <img
-          :src="`${photo.base}-${photo.sizes[0]}.${avifSupported ? 'avif' : 'jpg'}`"
-          :alt="photo.alt"
-          class="w-full h-full object-contain"
-          style="filter: blur(12px); transform: scale(1.05)"
-          draggable="false"
-        />
-      </div>
+      <img
+        v-if="photo && isLoading"
+        :src="`${photo.base}-${photo.sizes[0]}.${avifSupported ? 'avif' : 'jpg'}`"
+        :alt="photo.alt"
+        class="max-w-full max-h-full"
+        style="max-height: calc(100vh - 40px - 40px); filter: blur(12px); clip-path: inset(0)"
+        draggable="false"
+      />
 
       <!-- Full-res image (fades in once loaded) -->
       <picture v-if="photo" class="absolute inset-0 flex items-center justify-center w-full h-full">
