@@ -35,7 +35,7 @@ function thumbFallback(photo: Photo) {
 </script>
 
 <template>
-  <div class="pt-10">
+  <div>
     <slot name="header" />
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-0.5 p-0.5">
       <button
