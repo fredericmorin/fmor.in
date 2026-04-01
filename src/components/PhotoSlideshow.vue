@@ -40,6 +40,19 @@ function fallbackSrc(photo: Photo) {
   return `${photo.base}-${size}.jpg`;
 }
 
+const isLoading = ref(true);
+
+watch(
+  () => props.index,
+  () => {
+    isLoading.value = true;
+  },
+);
+
+function onFullResLoad() {
+  isLoading.value = false;
+}
+
 // Preload adjacent photos
 watch(
   () => props.index,
