@@ -3,6 +3,7 @@
 build: build-js build-py
 
 build-js:
+	npm install
 	npm run build
 
 build-py:

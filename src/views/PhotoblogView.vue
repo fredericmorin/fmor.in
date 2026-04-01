@@ -63,18 +63,17 @@ watch(
 
 <template>
   <div class="pt-10">
-    <div v-if="store.loading" class="flex items-center justify-center h-64 text-neutral-600 text-sm">
+    <div
+      v-if="store.loading"
+      class="flex items-center justify-center h-64 text-neutral-600 text-sm"
+    >
       Loading…
     </div>
     <div v-else-if="store.error" class="flex items-center justify-center h-64 text-red-500 text-sm">
       {{ store.error }}
     </div>
     <template v-else>
-      <PhotoGrid
-        v-if="showGrid"
-        :photos="store.photos"
-        @select="openPhoto"
-      />
+      <PhotoGrid v-if="showGrid" :photos="store.photos" @select="openPhoto" />
       <PhotoSlideshow
         v-else
         :photos="store.photos"

@@ -30,10 +30,7 @@ export const useGalleriesStore = defineStore("galleries", () => {
     galleryLoading.value.set(name, true);
     galleryError.value.delete(name);
     try {
-      byName.value.set(
-        name,
-        await fetchWithPreload<Photo[]>(`/data/galleries/${name}.json`),
-      );
+      byName.value.set(name, await fetchWithPreload<Photo[]>(`/data/galleries/${name}.json`));
     } catch (e) {
       galleryError.value.set(name, e instanceof Error ? e.message : String(e));
     } finally {

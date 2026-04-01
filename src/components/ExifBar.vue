@@ -23,7 +23,10 @@ const hasData = computed(() => fields.value.length > 0 || props.date);
 </script>
 
 <template>
-  <div v-if="hasData" class="flex items-center gap-3 px-4 py-2 border-t border-neutral-800 text-xs text-neutral-500 overflow-x-auto whitespace-nowrap">
+  <div
+    v-if="hasData"
+    class="flex items-center gap-3 px-4 py-2 border-t border-neutral-800 text-xs text-neutral-500 overflow-x-auto whitespace-nowrap"
+  >
     <span v-if="date" class="text-neutral-400 shrink-0">{{ date }}</span>
     <span v-if="date && fields.length" class="text-neutral-700">·</span>
     <span v-for="(field, i) in fields" :key="i" class="shrink-0">

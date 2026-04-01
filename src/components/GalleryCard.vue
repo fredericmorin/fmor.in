@@ -18,12 +18,14 @@ onMounted(async () => {
 });
 
 function srcset(format: "avif" | "jpg") {
-  return props.gallery.sizes.map((s) => `${props.gallery.cover_base}-${s}.${format} ${s}w`).join(", ");
+  return props.gallery.sizes
+    .map((s) => `${props.gallery.cover_base}-${s}.${format} ${s}w`)
+    .join(", ");
 }
 
 function fallbackSrc() {
   const sizes = props.gallery.sizes;
-  const size = sizes.includes(800) ? 800 : sizes[0];
+  const size = sizes.includes(400) ? 400 : sizes[0];
   return `${props.gallery.cover_base}-${size}.jpg`;
 }
 

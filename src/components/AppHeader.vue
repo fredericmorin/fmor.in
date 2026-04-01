@@ -14,7 +14,9 @@ function navigate(path: string) {
 </script>
 
 <template>
-  <header class="fixed top-0 left-0 right-0 z-50 h-10 flex items-center justify-between px-4 bg-neutral-950 border-b border-neutral-800">
+  <header
+    class="fixed top-0 left-0 right-0 z-50 h-10 flex items-center justify-between px-4 bg-neutral-950 border-b border-neutral-800"
+  >
     <a
       href="/photoblog/"
       class="text-sm font-medium tracking-widest text-neutral-300 hover:text-white transition-colors"
@@ -26,7 +28,11 @@ function navigate(path: string) {
       <a
         href="/photoblog/"
         class="text-sm transition-colors"
-        :class="photoblogActive ? 'text-white border-b border-white pb-0.5' : 'text-neutral-500 hover:text-neutral-300'"
+        :class="
+          photoblogActive
+            ? 'text-white border-b border-white pb-0.5'
+            : 'text-neutral-500 hover:text-neutral-300'
+        "
         @click.prevent="navigate('/photoblog/')"
       >
         Photoblog
@@ -34,7 +40,11 @@ function navigate(path: string) {
       <a
         href="/gallery/"
         class="text-sm transition-colors"
-        :class="galleryActive ? 'text-white border-b border-white pb-0.5' : 'text-neutral-500 hover:text-neutral-300'"
+        :class="
+          galleryActive
+            ? 'text-white border-b border-white pb-0.5'
+            : 'text-neutral-500 hover:text-neutral-300'
+        "
         @click.prevent="navigate('/gallery/')"
       >
         Gallery

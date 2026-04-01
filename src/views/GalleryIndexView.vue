@@ -19,10 +19,16 @@ function openGallery(slug: string) {
 
 <template>
   <div class="pt-10">
-    <div v-if="store.indexLoading" class="flex items-center justify-center h-64 text-neutral-600 text-sm">
+    <div
+      v-if="store.indexLoading"
+      class="flex items-center justify-center h-64 text-neutral-600 text-sm"
+    >
       Loading…
     </div>
-    <div v-else-if="store.indexError" class="flex items-center justify-center h-64 text-red-500 text-sm">
+    <div
+      v-else-if="store.indexError"
+      class="flex items-center justify-center h-64 text-red-500 text-sm"
+    >
       {{ store.indexError }}
     </div>
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0.5 p-0.5">

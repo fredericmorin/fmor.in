@@ -41,7 +41,11 @@ function thumbFallback(photo: Photo) {
       <button
         v-for="(photo, i) in photos"
         :key="photo.slug"
-        :ref="(el) => { if (i === activeIndex) activeRef = el as HTMLElement }"
+        :ref="
+          (el) => {
+            if (i === activeIndex) activeRef = el as HTMLElement;
+          }
+        "
         class="relative aspect-square overflow-hidden bg-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
         :aria-label="photo.alt || `Photo ${i + 1}`"
         :aria-current="i === activeIndex ? 'true' : undefined"

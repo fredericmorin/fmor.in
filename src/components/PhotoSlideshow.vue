@@ -92,7 +92,12 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 
       <!-- Image -->
       <picture v-if="photo" class="max-w-full max-h-full">
-        <source v-if="avifSupported" type="image/avif" :srcset="srcset(photo, 'avif')" sizes="100vw" />
+        <source
+          v-if="avifSupported"
+          type="image/avif"
+          :srcset="srcset(photo, 'avif')"
+          sizes="100vw"
+        />
         <source type="image/jpeg" :srcset="srcset(photo, 'jpg')" sizes="100vw" />
         <img
           :src="fallbackSrc(photo)"
@@ -110,7 +115,9 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         aria-label="Previous photo"
         @click="emit('prev')"
       >
-        <span class="text-3xl text-white drop-shadow-lg group-hover:scale-110 transition-transform">‹</span>
+        <span class="text-3xl text-white drop-shadow-lg group-hover:scale-110 transition-transform"
+          >‹</span
+        >
       </button>
 
       <!-- Next zone -->
@@ -120,7 +127,9 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         aria-label="Next photo"
         @click="emit('next')"
       >
-        <span class="text-3xl text-white drop-shadow-lg group-hover:scale-110 transition-transform">›</span>
+        <span class="text-3xl text-white drop-shadow-lg group-hover:scale-110 transition-transform"
+          >›</span
+        >
       </button>
     </div>
 

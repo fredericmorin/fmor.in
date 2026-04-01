@@ -14,8 +14,7 @@ const photos = computed(() => store.photosFor(name.value));
 const loading = computed(() => store.isLoading(name.value));
 const error = computed(() => store.galleryError.get(name.value));
 
-const displayName = (n: string) =>
-  n.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+const displayName = (n: string) => n.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
 onMounted(() => store.loadGallery(name.value));
 watch(name, (n) => store.loadGallery(n));
@@ -60,7 +59,9 @@ watch(
       document.title = `fmor.in — ${displayName(n)}`;
     } else {
       const photo = photos.value[idx];
-      document.title = photo ? `fmor.in — ${photo.alt || photo.slug}` : `fmor.in — ${displayName(n)}`;
+      document.title = photo
+        ? `fmor.in — ${photo.alt || photo.slug}`
+        : `fmor.in — ${displayName(n)}`;
     }
   },
   { immediate: true },
@@ -76,11 +77,7 @@ watch(
       {{ error }}
     </div>
     <template v-else>
-      <PhotoGrid
-        v-if="showGrid"
-        :photos="photos"
-        @select="openPhoto"
-      >
+      <PhotoGrid v-if="showGrid" :photos="photos" @select="openPhoto">
         <template #header>
           <div class="flex items-center gap-4 px-4 py-3 border-b border-neutral-800">
             <button

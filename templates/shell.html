@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{ title }}</title>
     <meta property="og:title" content="{{ og_title }}" />
-    {% if og_image %}<meta property="og:image" content="{{ og_image }}" />{% endif %}
+    {% if og_image %}
+    <meta property="og:image" content="{{ og_image }}" />
+    {% endif %}
     <link rel="stylesheet" href="/static/dist/bundle.css" />
     <link rel="icon" href="/favicon.ico" />
     {% if preload_urls %}
