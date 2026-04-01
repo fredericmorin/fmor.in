@@ -12,8 +12,8 @@ build-py:
 clean:
 	rm -rf output static/dist
 
-serve: build
-	cd output && uvx python -m http.server 8000
+serve: build-py
+	npx vite
 
 deploy: build
 	rsync -av output/ fmor.in:/data/fmor.in/htdocs

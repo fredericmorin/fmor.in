@@ -2,7 +2,8 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "node:url";
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  publicDir: command === "serve" ? "output" : false,
   plugins: [vue()],
   resolve: {
     alias: {
@@ -23,4 +24,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));
