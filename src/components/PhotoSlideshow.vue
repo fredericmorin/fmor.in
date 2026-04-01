@@ -73,7 +73,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 </script>
 
 <template>
-  <div class="flex flex-col" style="height: calc(100vh - 40px)">
+  <div class="slideshow-wrapper flex flex-col" style="height: calc(100vh - 40px)">
     <!-- Photo area -->
     <div class="relative flex-1 flex items-center justify-center bg-neutral-900 overflow-hidden">
       <!-- Grid toggle -->
@@ -81,7 +81,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         class="absolute top-3 left-3 z-10 text-xs text-neutral-500 hover:text-neutral-300 transition-colors px-2 py-1 rounded"
         @click="emit('showGrid')"
       >
-        Grid
+        GRID
       </button>
 
       <!-- Counter -->
@@ -101,7 +101,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         <img
           :src="fallbackSrc(photo)"
           :alt="photo.alt"
-          class="max-w-full max-h-full object-contain select-none"
+          class="photo-img max-w-full max-h-full object-contain select-none"
           style="max-height: calc(100vh - 40px - 40px)"
           draggable="false"
         />
@@ -136,3 +136,14 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
     <ExifBar v-if="photo" :exif="photo.exif" :date="photo.date" />
   </div>
 </template>
+
+<style scoped>
+@media (orientation: landscape) and (max-height: 500px) {
+  .slideshow-wrapper {
+    height: 100vh !important;
+  }
+  .photo-img {
+    max-height: 100vh !important;
+  }
+}
+</style>

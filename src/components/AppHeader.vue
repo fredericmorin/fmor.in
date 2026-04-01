@@ -123,3 +123,11 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
     </nav>
   </header>
 </template>
+
+<style scoped>
+@media (orientation: landscape) and (max-height: 500px) {
+  header {
+    display: none;
+  }
+}
+</style>
