@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import type { Photo } from "@/types";
 import { useAvif } from "@/composables/useAvif";
 
-const props = defineProps<{
+defineProps<{
   photos: Photo[];
   activeIndex?: number;
   /** Optional header slot content (e.g. back link + title for gallery pages) */

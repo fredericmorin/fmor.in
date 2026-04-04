@@ -1,4 +1,4 @@
-.PHONY: build build-js build-py clean serve deploy fmt
+.PHONY: build build-js build-py clean serve deploy fmt lint
 
 build: build-js build-py
 
@@ -24,4 +24,8 @@ test:
 fmt:
 	uvx ruff format .
 	uvx ruff check --fix .
-	npx prettier --write "templates/**/*.html" "src/**/*.{ts,vue}"
+	npx eslint --fix "src/**/*.{ts,vue}" "*.ts"
+
+lint:
+	uvx ruff check .
+	npm run lint
