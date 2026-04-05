@@ -24,7 +24,7 @@ test:
 fmt:
 	uvx ruff format .
 	uvx ruff check --fix .
-	npx eslint --fix "src/**/*.{ts,vue}" "*.ts"
+	npm run fmt
 
 lint:
 	uvx ruff check .
