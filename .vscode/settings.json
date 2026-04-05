@@ -1,0 +1,29 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // Python — Ruff formatter + linter (mirrors `uvx ruff format` + `uvx ruff check --fix`)
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true
+  },
+  "ruff.format.args": [],
+  "ruff.lint.args": [],
+
+  // JS / TS / Vue — ESLint fix-on-save (mirrors `eslint --fix`)
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.formatOnSave": false
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.formatOnSave": false
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.formatOnSave": false
+  },
+  "eslint.validate": ["javascript", "typescript", "vue"]
+}
